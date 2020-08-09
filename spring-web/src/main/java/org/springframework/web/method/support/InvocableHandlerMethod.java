@@ -127,12 +127,14 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	@Nullable
 	public Object invokeForRequest(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
-
+        
+		// 解析处理器方法的参数
 		Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Invoking '" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
 					"' with arguments " + Arrays.toString(args));
 		}
+		// 获取到处理器方法的参数之后，调用处理器的方法
 		Object returnValue = doInvoke(args);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Method [" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
@@ -147,22 +149,26 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	private Object[] getMethodArgumentValues(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+        // 从HandlerMethod中获取处理器方法的参数
 		MethodParameter[] parameters = getMethodParameters();
 		Object[] args = new Object[parameters.length];
+		// 逐个对参数进行处理
 		for (int i = 0; i < parameters.length; i++) {
 			MethodParameter parameter = parameters[i];
+			// 
 			parameter.initParameterNameDiscovery(this.parameterNameDiscoverer);
 			args[i] = resolveProvidedArgument(parameter, providedArgs);
 			if (args[i] != null) {
 				continue;
 			}
+			// 判断当前的参数解析器是否支持该类型参数的解析
 			if (this.argumentResolvers.supportsParameter(parameter)) {
 				try {
+					// 调用方法进行参数的解析
 					args[i] = this.argumentResolvers.resolveArgument(
 							parameter, mavContainer, request, this.dataBinderFactory);
 					continue;
-				}
-				catch (Exception ex) {
+				} catch (Exception ex) {
 					if (logger.isDebugEnabled()) {
 						logger.debug(getArgumentResolutionErrorMessage("Failed to resolve", i), ex);
 					}
@@ -175,6 +181,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 						": " + getArgumentResolutionErrorMessage("No suitable resolver for", i));
 			}
 		}
+		// 至此，参数的解析完成。返回解析后的参数。
 		return args;
 	}
 
@@ -202,18 +209,19 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 	/**
 	 * Invoke the handler method with the given argument values.
+	 * 调用处理器方法
 	 */
 	protected Object doInvoke(Object... args) throws Exception {
 		ReflectionUtils.makeAccessible(getBridgedMethod());
 		try {
+			// getBean就是处理器所在的类
 			return getBridgedMethod().invoke(getBean(), args);
-		}
-		catch (IllegalArgumentException ex) {
+		}catch (IllegalArgumentException ex) {
+			// 可以看出，还不知晓全局异常处理器如何工作的
 			assertTargetBean(getBridgedMethod(), getBean(), args);
 			String text = (ex.getMessage() != null ? ex.getMessage() : "Illegal argument");
 			throw new IllegalStateException(getInvocationErrorMessage(text, args), ex);
-		}
-		catch (InvocationTargetException ex) {
+		}catch (InvocationTargetException ex) {
 			// Unwrap for HandlerExceptionResolvers ...
 			Throwable targetException = ex.getTargetException();
 			if (targetException instanceof RuntimeException) {

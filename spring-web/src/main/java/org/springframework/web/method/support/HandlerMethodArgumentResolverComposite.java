@@ -44,6 +44,10 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 
 	private final List<HandlerMethodArgumentResolver> argumentResolvers = new LinkedList<>();
 
+    
+	/*
+	* 缓存，用于获取解析参数
+	*/
 	private final Map<MethodParameter, HandlerMethodArgumentResolver> argumentResolverCache =
 			new ConcurrentHashMap<>(256);
 
@@ -116,26 +120,33 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	@Nullable
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
-
+       // 获取参数解析器
 		HandlerMethodArgumentResolver resolver = getArgumentResolver(parameter);
+		// 如果参数解析器为null，则抛出异常
 		if (resolver == null) {
 			throw new IllegalArgumentException("Unknown parameter type [" + parameter.getParameterType().getName() + "]");
 		}
+		// 返回解析后的参数
 		return resolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 	}
 
 	/**
 	 * Find a registered {@link HandlerMethodArgumentResolver} that supports the given method parameter.
+	 * 获取参数解析器
 	 */
 	@Nullable
 	private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parameter) {
+		// 首先从缓存中获取参数解析器
 		HandlerMethodArgumentResolver result = this.argumentResolverCache.get(parameter);
+		// 如果为null,则寻找参数解析器
 		if (result == null) {
 			for (HandlerMethodArgumentResolver methodArgumentResolver : this.argumentResolvers) {
+				// 日志打印
 				if (logger.isTraceEnabled()) {
 					logger.trace("Testing if argument resolver [" + methodArgumentResolver + "] supports [" +
 							parameter.getGenericParameterType() + "]");
 				}
+				// 若当前的参数解析器支持，则将其添加到缓存中，并返回.
 				if (methodArgumentResolver.supportsParameter(parameter)) {
 					result = methodArgumentResolver;
 					this.argumentResolverCache.put(parameter, result);

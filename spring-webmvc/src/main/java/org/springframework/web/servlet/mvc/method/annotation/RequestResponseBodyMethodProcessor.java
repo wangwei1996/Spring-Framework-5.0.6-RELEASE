@@ -127,12 +127,16 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
 		parameter = parameter.nestedIfOptional();
+		// 使用消息转换器进行参数的转换
 		Object arg = readWithMessageConverters(webRequest, parameter, parameter.getNestedGenericParameterType());
+		// name就是参数名(形参名)
 		String name = Conventions.getVariableNameForParameter(parameter);
 
 		if (binderFactory != null) {
+			// 创建绑定器
 			WebDataBinder binder = binderFactory.createBinder(webRequest, arg, name);
 			if (arg != null) {
+				// 对参数进行校验(当使用了@valid注解)
 				validateIfApplicable(binder, parameter);
 				if (binder.getBindingResult().hasErrors() && isBindExceptionRequired(binder, parameter)) {
 					throw new MethodArgumentNotValidException(parameter, binder.getBindingResult());
@@ -167,6 +171,10 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 		return (requestBody != null && requestBody.required() && !parameter.isOptional());
 	}
 
+
+    /*
+	* 将处理器返回的结果写回到请求者
+	*/
 	@Override
 	public void handleReturnValue(@Nullable Object returnValue, MethodParameter returnType,
 			ModelAndViewContainer mavContainer, NativeWebRequest webRequest)
@@ -176,7 +184,10 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 		ServletServerHttpRequest inputMessage = createInputMessage(webRequest);
 		ServletServerHttpResponse outputMessage = createOutputMessage(webRequest);
 
-		// Try even with null return value. ResponseBodyAdvice could get involved.
+		/*
+		*  Try even with null return value. ResponseBodyAdvice could get involved.
+		*  使用消息处理器进行处理
+		*/
 		writeWithMessageConverters(returnValue, returnType, inputMessage, outputMessage);
 	}
 

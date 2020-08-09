@@ -167,6 +167,7 @@ public abstract class AbstractMessageConverterMethodArgumentResolver implements 
 		MediaType contentType;
 		boolean noContentType = false;
 		try {
+			// 获取请求上下文的类型.如 application/json;charset=UTF-8	
 			contentType = inputMessage.getHeaders().getContentType();
 		}
 		catch (InvalidMediaTypeException ex) {
@@ -177,24 +178,29 @@ public abstract class AbstractMessageConverterMethodArgumentResolver implements 
 			contentType = MediaType.APPLICATION_OCTET_STREAM;
 		}
 
+        // 获取处理器所在的Controller的类名
 		Class<?> contextClass = parameter.getContainingClass();
+		// 获取参数的类型
 		Class<T> targetClass = (targetType instanceof Class ? (Class<T>) targetType : null);
 		if (targetClass == null) {
 			ResolvableType resolvableType = ResolvableType.forMethodParameter(parameter);
 			targetClass = (Class<T>) resolvableType.resolve();
 		}
 
+        // 请求方法.POST 或 GET .....
 		HttpMethod httpMethod = (inputMessage instanceof HttpRequest ? ((HttpRequest) inputMessage).getMethod() : null);
+		// 声明一个返回值,赋值一个空对象
 		Object body = NO_VALUE;
 
 		EmptyBodyCheckingHttpInputMessage message;
 		try {
 			message = new EmptyBodyCheckingHttpInputMessage(inputMessage);
-
+            // 遍历消息转换器，进行参数的转换
 			for (HttpMessageConverter<?> converter : this.messageConverters) {
 				Class<HttpMessageConverter<?>> converterType = (Class<HttpMessageConverter<?>>) converter.getClass();
 				GenericHttpMessageConverter<?> genericConverter =
 						(converter instanceof GenericHttpMessageConverter ? (GenericHttpMessageConverter<?>) converter : null);
+				// 注意这里的canRead方法
 				if (genericConverter != null ? genericConverter.canRead(targetType, contextClass, contentType) :
 						(targetClass != null && converter.canRead(targetClass, contentType))) {
 					if (logger.isDebugEnabled()) {
@@ -213,8 +219,7 @@ public abstract class AbstractMessageConverterMethodArgumentResolver implements 
 					break;
 				}
 			}
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			throw new HttpMessageNotReadableException("I/O error while reading input message", ex);
 		}
 
@@ -226,6 +231,7 @@ public abstract class AbstractMessageConverterMethodArgumentResolver implements 
 			throw new HttpMediaTypeNotSupportedException(contentType, this.allSupportedMediaTypes);
 		}
 
+        // 返回转换后的参数
 		return body;
 	}
 
