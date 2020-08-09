@@ -489,21 +489,25 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 */
 	@Override
 	protected final void initServletBean() throws ServletException {
+		// 日志打印(打印到Servlet的log文件中)
 		getServletContext().log("Initializing Spring FrameworkServlet '" + getServletName() + "'");
+		// 日志打印-标记DispatcherServlet开始初始化
 		if (this.logger.isInfoEnabled()) {
 			this.logger.info("FrameworkServlet '" + getServletName() + "': initialization started");
 		}
+		// DispatcherServlet初始化的开始时间
 		long startTime = System.currentTimeMillis();
 
 		try {
+			// 初始化WebApplicationContext
 			this.webApplicationContext = initWebApplicationContext();
 			initFrameworkServlet();
-		}
-		catch (ServletException | RuntimeException ex) {
+		}catch (ServletException | RuntimeException ex) {
 			this.logger.error("Context initialization failed", ex);
 			throw ex;
 		}
 
+         // 日志打印
 		if (this.logger.isInfoEnabled()) {
 			long elapsedTime = System.currentTimeMillis() - startTime;
 			this.logger.info("FrameworkServlet '" + getServletName() + "': initialization completed in " +
@@ -519,20 +523,45 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #FrameworkServlet(WebApplicationContext)
 	 * @see #setContextClass
 	 * @see #setContextConfigLocation
+	 * 
+	 * 为这个Servlet初始化一个或者创建一个WebApplicationContext
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
+		/*
+		* WebApplicationContext是一个抽象类，提供一个getWebApplicationContext(ServletContext)方法来获取Spring中的WebApplicationContext.
+		* 原理: Spring 容器初始化的方法org.springframework.web.context.ContextLoader.initWebApplicationContext(ServletContext)中通过servletContext.setAttribute
+		* (WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);已经将WebApplicationContext的实例放入ServletContext 中了。然后在工具类的
+		* org.springframework.web.context.support.WebApplicationContextUtils.getWebApplicationContext(ServletContext)中就可以通过传入的ServletContext参数获取到WebApplicationContext实例了
+		*
+		*
+		* ServletContext是一个域对象，域对象是在服务器内存上创建的存储空间，用于在不用动态资源(Servlet)之间传递与共享数据。
+		*/
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		WebApplicationContext wac = null;
 
+        /*
+		* 因为FrameworkServlet实现了ApplicationContextAware接口,因此,在应用启动的过程中,会回调setApplicationContext(ApplicationContext)方法将WebApplicationContext(debug时发现是
+		* org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext类型的实例)赋值到DispatcherServlet中。
+		* 因此,这里不为空
+		*/
 		if (this.webApplicationContext != null) {
-			// A context instance was injected at construction time -> use it
+			/*
+			* A context instance was injected at construction time -> use it
+			* 一个上下文实例在初始化的时候就注入了，那就使用他
+			*/
 			wac = this.webApplicationContext;
+			// org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext 是ConfigurableWebApplicationContext的实现者
 			if (wac instanceof ConfigurableWebApplicationContext) {
+				// 强制类型转换
 				ConfigurableWebApplicationContext cwac = (ConfigurableWebApplicationContext) wac;
+				// isActive,这个表示该Servlet是否至少refresh一次，并且没有被close
 				if (!cwac.isActive()) {
-					// The context has not yet been refreshed -> provide services such as
-					// setting the parent context, setting the application context id, etc
+					/**
+					* The context has not yet been refreshed -> provide services such as
+					* setting the parent context, setting the application context id, etc
+					* 这个上下文还没有被刷新(还没有设置父上下文以及应用上下文id还没有设置)
+					*/
 					if (cwac.getParent() == null) {
 						// The context instance was injected without an explicit parent -> set
 						// the root application context (if any; may be null) as the parent
@@ -554,16 +583,21 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			wac = createWebApplicationContext(rootContext);
 		}
 
+        // refreshEventReceived(默认是false，即每次都需要刷新)只是用来标识onRefresh是否没调用
 		if (!this.refreshEventReceived) {
-			// Either the context is not a ConfigurableApplicationContext with refresh
-			// support or the context injected at construction time had already been
-			// refreshed -> trigger initial onRefresh manually here.
+			/* Either the context is not a ConfigurableApplicationContext with refresh
+			* support or the context injected at construction time had already been
+			* refreshed -> trigger initial onRefresh manually here.
+			* 则调用DispatcherServlet的onRefresh方法来进行刷新
+			*/ 
 			onRefresh(wac);
 		}
 
+        // 是否需要发布
 		if (this.publishContext) {
 			// Publish the context as a servlet context attribute.
 			String attrName = getServletContextAttributeName();
+			// 将WebApplicationContext作为ServletContext的一个属性来发布
 			getServletContext().setAttribute(attrName, wac);
 			if (this.logger.isDebugEnabled()) {
 				this.logger.debug("Published WebApplicationContext of servlet '" + getServletName() +

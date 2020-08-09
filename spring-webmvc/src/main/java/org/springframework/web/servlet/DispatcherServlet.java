@@ -484,6 +484,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 	/**
 	 * This implementation calls {@link #initStrategies}.
+	 * 进行在FrameworkServlet中的刷新操作
 	 */
 	@Override
 	protected void onRefresh(ApplicationContext context) {
@@ -493,15 +494,24 @@ public class DispatcherServlet extends FrameworkServlet {
 	/**
 	 * Initialize the strategy objects that this servlet uses.
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
+	 * 初始化DispatcherServlet可以使用到的策略对象
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		// 初始化文件上传解析器
 		initMultipartResolver(context);
+		// 初始化LocaleResolver解析器
 		initLocaleResolver(context);
+		// 初始化ThemeResolver解析器
 		initThemeResolver(context);
+		// 初始化处理器映射器
 		initHandlerMappings(context);
+		// 初始化处理器适配器
 		initHandlerAdapters(context);
+		// 初始化异常解析器
 		initHandlerExceptionResolvers(context);
+		// 初始化策略(请求到视图名的转换)
 		initRequestToViewNameTranslator(context);
+		// 初始化视图解析器
 		initViewResolvers(context);
 		initFlashMapManager(context);
 	}
@@ -510,6 +520,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the MultipartResolver used by this class.
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * no multipart handling is provided.
+	 * 从中可以看出,文件上传解析器是直接从WebApplicationContext中获取的,通过Bean的名字以及类型去获取的。当获取不到的时候,也不会向外抛出异常。
 	 */
 	private void initMultipartResolver(ApplicationContext context) {
 		try {
@@ -532,6 +543,8 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the LocaleResolver used by this class.
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * we default to AcceptHeaderLocaleResolver.
+	 * 对于LocaleResolver，其主要作用在于根据不同的用户区域展示不同的视图，而用户的区域也称为Locale，该信息是可以由前端直接获取的。通过这种方式，可以实现一种国际化的目的
+	 * 这里也是通过Bean的名字和类型去获取,且获取一个
 	 */
 	private void initLocaleResolver(ApplicationContext context) {
 		try {
@@ -554,6 +567,8 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the ThemeResolver used by this class.
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * we default to a FixedThemeResolver.
+	 * 初始化ThemeResolver解析器(去不同的目录下加载资源文件，从而达到多主题的功能(<link rel="stylesheet" type="text/css" href="<spring:theme code='helloworld'/>))
+	 * 这里也是通过Bean的名字和类型去获取,且获取一个
 	 */
 	private void initThemeResolver(ApplicationContext context) {
 		try {
@@ -561,8 +576,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Using ThemeResolver [" + this.themeResolver + "]");
 			}
-		}
-		catch (NoSuchBeanDefinitionException ex) {
+		} catch (NoSuchBeanDefinitionException ex) {
 			// We need to use the default.
 			this.themeResolver = getDefaultStrategy(context, ThemeResolver.class);
 			if (logger.isDebugEnabled()) {
@@ -576,32 +590,41 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the HandlerMappings used by this class.
 	 * <p>If no HandlerMapping beans are defined in the BeanFactory for this namespace,
 	 * we default to BeanNameUrlHandlerMapping.
+	 * 初始化处理器映射器
+	 * 什么是处理器映射器:
 	 */
 	private void initHandlerMappings(ApplicationContext context) {
 		this.handlerMappings = null;
 
+        // 是否检测所有的处理器映射器,在DispatcherServlet中默认是true
 		if (this.detectAllHandlerMappings) {
 			// Find all HandlerMappings in the ApplicationContext, including ancestor contexts.
 			Map<String, HandlerMapping> matchingBeans =
 					BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
 			if (!matchingBeans.isEmpty()) {
 				this.handlerMappings = new ArrayList<>(matchingBeans.values());
-				// We keep HandlerMappings in sorted order.
+				/*
+				* We keep HandlerMappings in sorted order.
+				* 给处理器映射器进行排序(重要方法:org.springframework.core.annotation.AnnotationAwareOrderComparator#findOrder)
+				*/
 				AnnotationAwareOrderComparator.sort(this.handlerMappings);
 			}
-		}
-		else {
+		} else {
 			try {
+				// 如果不是检测所有的处理器映射器，则根据名字类类型查找一个处理器映射器
 				HandlerMapping hm = context.getBean(HANDLER_MAPPING_BEAN_NAME, HandlerMapping.class);
 				this.handlerMappings = Collections.singletonList(hm);
-			}
-			catch (NoSuchBeanDefinitionException ex) {
+			} catch (NoSuchBeanDefinitionException ex) {
+				// 忽略异常，因为之后会有一个默认的处理器映射器
 				// Ignore, we'll add a default HandlerMapping later.
 			}
 		}
 
-		// Ensure we have at least one HandlerMapping, by registering
-		// a default HandlerMapping if no other mappings are found.
+		/**
+		*Ensure we have at least one HandlerMapping, by registering
+		* a default HandlerMapping if no other mappings are found.
+		* 确保至少有一个HandlerMapping,如果没有则注册一个默认的
+		*/
 		if (this.handlerMappings == null) {
 			this.handlerMappings = getDefaultStrategies(context, HandlerMapping.class);
 			if (logger.isDebugEnabled()) {
@@ -614,6 +637,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the HandlerAdapters used by this class.
 	 * <p>If no HandlerAdapter beans are defined in the BeanFactory for this namespace,
 	 * we default to SimpleControllerHandlerAdapter.
+	 * 初始化逻辑同 HandlerMapping的初始化过程
 	 */
 	private void initHandlerAdapters(ApplicationContext context) {
 		this.handlerAdapters = null;
@@ -627,13 +651,11 @@ public class DispatcherServlet extends FrameworkServlet {
 				// We keep HandlerAdapters in sorted order.
 				AnnotationAwareOrderComparator.sort(this.handlerAdapters);
 			}
-		}
-		else {
+		} else {
 			try {
 				HandlerAdapter ha = context.getBean(HANDLER_ADAPTER_BEAN_NAME, HandlerAdapter.class);
 				this.handlerAdapters = Collections.singletonList(ha);
-			}
-			catch (NoSuchBeanDefinitionException ex) {
+			}catch (NoSuchBeanDefinitionException ex) {
 				// Ignore, we'll add a default HandlerAdapter later.
 			}
 		}
@@ -652,6 +674,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the HandlerExceptionResolver used by this class.
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * we default to no exception resolver.
+	 * 初始化异常解析器，初始化逻辑同HandlerMapping
 	 */
 	private void initHandlerExceptionResolvers(ApplicationContext context) {
 		this.handlerExceptionResolvers = null;
@@ -690,6 +713,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	/**
 	 * Initialize the RequestToViewNameTranslator used by this servlet instance.
 	 * <p>If no implementation is configured then we default to DefaultRequestToViewNameTranslator.
+	 * RequestToViewNameTranslator可以在处理器返回的View为空时使用它根据Request获取viewName(请求名到视图名的转换)
 	 */
 	private void initRequestToViewNameTranslator(ApplicationContext context) {
 		try {
@@ -698,8 +722,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Using RequestToViewNameTranslator [" + this.viewNameTranslator + "]");
 			}
-		}
-		catch (NoSuchBeanDefinitionException ex) {
+		}catch (NoSuchBeanDefinitionException ex) {
 			// We need to use the default.
 			this.viewNameTranslator = getDefaultStrategy(context, RequestToViewNameTranslator.class);
 			if (logger.isDebugEnabled()) {
@@ -714,6 +737,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the ViewResolvers used by this class.
 	 * <p>If no ViewResolver beans are defined in the BeanFactory for this
 	 * namespace, we default to InternalResourceViewResolver.
+	 * 初始化视图解析器,初始化逻辑同HandlerMapping
 	 */
 	private void initViewResolvers(ApplicationContext context) {
 		this.viewResolvers = null;
@@ -727,8 +751,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				// We keep ViewResolvers in sorted order.
 				AnnotationAwareOrderComparator.sort(this.viewResolvers);
 			}
-		}
-		else {
+		} else {
 			try {
 				ViewResolver vr = context.getBean(VIEW_RESOLVER_BEAN_NAME, ViewResolver.class);
 				this.viewResolvers = Collections.singletonList(vr);
@@ -752,6 +775,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the {@link FlashMapManager} used by this servlet instance.
 	 * <p>If no implementation is configured then we default to
 	 * {@code org.springframework.web.servlet.support.DefaultFlashMapManager}.
+	 * FlashMapManager 用于重定向时附带数据?
 	 */
 	private void initFlashMapManager(ApplicationContext context) {
 		try {
@@ -759,8 +783,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Using FlashMapManager [" + this.flashMapManager + "]");
 			}
-		}
-		catch (NoSuchBeanDefinitionException ex) {
+		} catch (NoSuchBeanDefinitionException ex) {
 			// We need to use the default.
 			this.flashMapManager = getDefaultStrategy(context, FlashMapManager.class);
 			if (logger.isDebugEnabled()) {

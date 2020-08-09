@@ -143,14 +143,19 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * invoke subclass initialization.
 	 * @throws ServletException if bean properties are invalid (or required
 	 * properties are missing), or if subclass initialization fails.
+	 * 在DispatcherServlet初始化的时候，会执行该方法(从DispatcherServlet的继承类图可以获知)
 	 */
 	@Override
 	public final void init() throws ServletException {
+		// 日志打印
 		if (logger.isDebugEnabled()) {
 			logger.debug("Initializing servlet '" + getServletName() + "'");
 		}
 
-		// Set bean properties from init parameters.
+		/*
+		*  Set bean properties from init parameters.
+		*  设置Servlet的属性
+		*/
 		PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
 		if (!pvs.isEmpty()) {
 			try {
@@ -168,9 +173,13 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 			}
 		}
 
-		// Let subclasses do whatever initialization they like.
+		/**
+		* Let subclasses do whatever initialization they like.
+		* 进行下一步初始化操作
+		*/
 		initServletBean();
 
+        // 日志打印
 		if (logger.isDebugEnabled()) {
 			logger.debug("Servlet '" + getServletName() + "' configured successfully");
 		}
