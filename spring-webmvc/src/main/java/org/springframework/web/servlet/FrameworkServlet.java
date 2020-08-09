@@ -872,6 +872,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 	/**
 	 * Override the parent class implementation in order to intercept PATCH requests.
+	 * 不论如何，还是会调用processRequest方法
 	 */
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response)
@@ -993,30 +994,32 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 		Throwable failureCause = null;
 
+        // 通过ThreadLocal对象，从Thread中获取LocaleContext对象.
 		LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
+		// 通过已有的Request来构建出LocaleContext对象
 		LocaleContext localeContext = buildLocaleContext(request);
 
+        // 通过ThreadLocal对象从Thread中获取RequestAttributes对象。
 		RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
+		// 给当前的request构建出ServletRequestAttributes对象
 		ServletRequestAttributes requestAttributes = buildRequestAttributes(request, response, previousAttributes);
-
+        // 异步管理器，暂时忽略
+		// 这一步会往request的attributes中添加异步管理器，详见方法:org.springframework.web.context.request.async.WebAsyncUtils#getAsyncManager(javax.servlet.ServletRequest)
 		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
 		asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
 
+        // 主要将LocaleContext && requestAttributes放入到Thread中(通过ThreadLocal:LocaleContextHolder、RequestContextHolder)
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
 			doService(request, response);
-		}
-		catch (ServletException | IOException ex) {
+		} catch (ServletException | IOException ex) {
 			failureCause = ex;
 			throw ex;
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			failureCause = ex;
 			throw new NestedServletException("Request processing failed", ex);
-		}
-
-		finally {
+		} finally {
 			resetContextHolders(request, previousLocaleContext, previousAttributes);
 			if (requestAttributes != null) {
 				requestAttributes.requestCompleted();

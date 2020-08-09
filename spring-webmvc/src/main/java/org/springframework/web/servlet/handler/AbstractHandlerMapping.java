@@ -343,24 +343,36 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @param request current HTTP request
 	 * @return the corresponding handler instance, or the default handler
 	 * @see #getHandlerInternal
+	 * 通过request来获取可执行链
 	 */
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		// 调用org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#getHandlerInternal方法来获取处理器()
 		Object handler = getHandlerInternal(request);
+		// 如果获取不到HandlerMethod,则使用默认的HandlerMethod
 		if (handler == null) {
 			handler = getDefaultHandler();
 		}
+		// 如果默认的处理器也不存在，则返回null(执行链)
 		if (handler == null) {
 			return null;
 		}
-		// Bean name or resolved handler?
+		/**
+		* Bean name or resolved handler?
+		* 如果返回的处理器是一个String类型，则从ApplicationContext中获取该bean
+		* 这个是取决与不同类型的HandlerMapping 
+		*  1. org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#getHandlerInternal返回HandlerMethod
+		*  2. org.springframework.web.servlet.handler.AbstractUrlHandlerMapping#getHandlerInternal 返回的是一个Object
+		*/
 		if (handler instanceof String) {
 			String handlerName = (String) handler;
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
 
+        // 通过处理器来获取执行链(主要是完善拦截器信息)
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
+		// 如果是跨域的请求---暂时跳过
 		if (CorsUtils.isCorsRequest(request)) {
 			CorsConfiguration globalConfig = this.globalCorsConfigSource.getCorsConfiguration(request);
 			CorsConfiguration handlerConfig = getCorsConfiguration(handler, request);
@@ -408,23 +420,32 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @param request current HTTP request
 	 * @return the HandlerExecutionChain (never {@code null})
 	 * @see #getAdaptedInterceptors()
+	 * 通过执行器来获取执行链,主要是完善拦截器信息
 	 */
 	protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
+		/*
+		* 如果是org.springframework.web.servlet.handler.AbstractHandlerMethodMapping，则这里的handler是HandlerMethod
+		* 因此，会创建一个新的执行链
+		*/
 		HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
 				(HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
 
+        // 获取请求路径
 		String lookupPath = this.urlPathHelper.getLookupPathForRequest(request);
+		// 遍历所有的拦截器,将符合条件的拦截器添加到执行链中
 		for (HandlerInterceptor interceptor : this.adaptedInterceptors) {
+			// MappedInterceptor的才有需要拦截哪些路径，放行哪些路径。因此，这里需要根据路径来判断是否需要添加到执行链中
 			if (interceptor instanceof MappedInterceptor) {
 				MappedInterceptor mappedInterceptor = (MappedInterceptor) interceptor;
 				if (mappedInterceptor.matches(lookupPath, this.pathMatcher)) {
 					chain.addInterceptor(mappedInterceptor.getInterceptor());
 				}
-			}
-			else {
+			} else {
+				// 因为不是MappedInterceptor类型的拦截器，因此会拦截所有的路径，因此直接添加到执行链中即可
 				chain.addInterceptor(interceptor);
 			}
 		}
+		// 返回执行链
 		return chain;
 	}
 

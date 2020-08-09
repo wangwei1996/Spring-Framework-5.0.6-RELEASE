@@ -159,18 +159,25 @@ public class UrlPathHelper {
 	 * @return the lookup path
 	 * @see #getPathWithinApplication
 	 * @see #getPathWithinServletMapping
+	 * 从request中获取请求路径
 	 */
 	public String getLookupPathForRequest(HttpServletRequest request) {
-		// Always use full path within current servlet context?
+		/*
+		* Always use full path within current servlet context?
+		* 是否使用全路径
+		*/ 
 		if (this.alwaysUseFullPath) {
 			return getPathWithinApplication(request);
 		}
-		// Else, use path within current servlet mapping if applicable
+		/*
+		* Else, use path within current servlet mapping if applicable
+		* 否则，则使用相对路径.当对于当前的Servlet映射中使用的path
+		*/
 		String rest = getPathWithinServletMapping(request);
+		// 如果不是空，则返回路径
 		if (!"".equals(rest)) {
 			return rest;
-		}
-		else {
+		} else { // 否则，从WebApplicationContext中获取请求路径了
 			return getPathWithinApplication(request);
 		}
 	}

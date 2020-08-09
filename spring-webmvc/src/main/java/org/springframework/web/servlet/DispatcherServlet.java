@@ -909,14 +909,18 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@Override
 	protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		// 日志打印
 		if (logger.isDebugEnabled()) {
 			String resumed = WebAsyncUtils.getAsyncManager(request).hasConcurrentResult() ? " resumed" : "";
 			logger.debug("DispatcherServlet with name '" + getServletName() + "'" + resumed +
 					" processing " + request.getMethod() + " request for [" + getRequestUri(request) + "]");
 		}
 
-		// Keep a snapshot of the request attributes in case of an include,
-		// to be able to restore the original attributes after the include.
+		/**
+		* Keep a snapshot of the request attributes in case of an include,
+		* to be able to restore the original attributes after the include.
+		* 这里是用于处理jsp中的include指令
+		*/
 		Map<String, Object> attributesSnapshot = null;
 		if (WebUtils.isIncludeRequest(request)) {
 			attributesSnapshot = new HashMap<>();
@@ -929,12 +933,15 @@ public class DispatcherServlet extends FrameworkServlet {
 			}
 		}
 
-		// Make framework objects available to handlers and view objects.
+		/**
+		* 可以看出，DispatcherServlet在进入处理器之前将ApplicationContext、LocaleResolver、ThemeResolver、ThemeSource都放入到了Request中的attributes中去了，之后也可以从中获取了
+		*/
 		request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, getWebApplicationContext());
 		request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, this.localeResolver);
 		request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
 		request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
 
+        // FlashMap用于重定向携带数据,这里暂不延伸!!!
 		if (this.flashMapManager != null) {
 			FlashMap inputFlashMap = this.flashMapManager.retrieveAndUpdate(request, response);
 			if (inputFlashMap != null) {
@@ -945,9 +952,9 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 
 		try {
+			// 进行下一步处理
 			doDispatch(request, response);
-		}
-		finally {
+		} finally {
 			if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
 				// Restore the original attribute snapshot, in case of an include.
 				if (attributesSnapshot != null) {
@@ -973,6 +980,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		HandlerExecutionChain mappedHandler = null;
 		boolean multipartRequestParsed = false;
 
+        // 从request中获取到异步管理器
 		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
 
 		try {
@@ -980,20 +988,32 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
+				// 核对一下，是否是文件上传的request，如果是文件上传，则通过MultipartResolver的resolveMultipart(final HttpServletRequest)方法对request进行处理
 				processedRequest = checkMultipart(request);
+				// 是否经过转换,因为如果是文件上传的话，则会通过文件上传解析器来对request进行处理，返回一个新的request(类型取决于文件上传解析器)
 				multipartRequestParsed = (processedRequest != request);
 
-				// Determine handler for the current request.
+				/*
+				* Determine handler for the current request.
+				* 从处理器映射器(HandlerMapping)中获取执行链
+				*/
 				mappedHandler = getHandler(processedRequest);
+				// 如果查询不到执行链，根据配置是抛出异常或返回请求者404
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);
 					return;
 				}
 
-				// Determine handler adapter for the current request.
+				/**
+				*Determine handler adapter for the current request.
+				* 获取处理器适配器
+				*/
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
-				// Process last-modified header, if supported by the handler.
+				/*
+				* Process last-modified header, if supported by the handler.
+				* 处理get/head请求的Last-Modified?
+				*/
 				String method = request.getMethod();
 				boolean isGet = "GET".equals(method);
 				if (isGet || "HEAD".equals(method)) {
@@ -1006,11 +1026,16 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
+                /*
+				*  执行处理器链上的拦截器的preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)方法，请注意，是正序处理
+				*/
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
 
-				// Actually invoke the handler.
+				/*
+				*  org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter#handle
+				*/
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
@@ -1018,6 +1043,10 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				applyDefaultViewName(processedRequest, mv);
+				/*
+				*
+				*  执行处理器链上的拦截器的org.springframework.web.servlet.HandlerExecutionChain#applyPostHandle方法，请注意是倒序处理
+				*/
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1199,16 +1228,21 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>Tries all handler mappings in order.
 	 * @param request current HTTP request
 	 * @return the HandlerExecutionChain, or {@code null} if no handler could be found
+	 * 返回当前请求的可执行链
 	 */
 	@Nullable
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		// 如果处理器映射器是null，则没有数据，直接返回null
 		if (this.handlerMappings != null) {
+			// 遍历每一个处理器映射器,从每一个处理器映射器中获取执行链。若获取到了，则直接返回；反之，返回null。
 			for (HandlerMapping hm : this.handlerMappings) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(
 							"Testing handler map [" + hm + "] in DispatcherServlet with name '" + getServletName() + "'");
 				}
+				// 调用org.springframework.web.servlet.handler.AbstractHandlerMapping#getHandler的方法去获取执行链
 				HandlerExecutionChain handler = hm.getHandler(request);
+				// 找到了，则直接返回
 				if (handler != null) {
 					return handler;
 				}
@@ -1241,18 +1275,23 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Return the HandlerAdapter for this handler object.
 	 * @param handler the handler object to find an adapter for
 	 * @throws ServletException if no HandlerAdapter can be found for the handler. This is a fatal error.
+	 * 获取处理器适配器
 	 */
 	protected HandlerAdapter getHandlerAdapter(Object handler) throws ServletException {
+		// 判断DispatcherServlet中的处理器适配器是否为null
 		if (this.handlerAdapters != null) {
+			// 遍历处理器适配器
 			for (HandlerAdapter ha : this.handlerAdapters) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Testing handler adapter [" + ha + "]");
 				}
+				// 判断当前的处理器适配器是否满足,若满足，则返回；反之，则继续查找(不同的适配器支持的也不一样:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter支持HandlerMethod)
 				if (ha.supports(handler)) {
 					return ha;
 				}
 			}
 		}
+		// 处理器适配器为空或者没有找到，则抛出异常
 		throw new ServletException("No adapter for handler [" + handler +
 				"]: The DispatcherServlet configuration needs to include a HandlerAdapter that supports this handler");
 	}

@@ -762,9 +762,17 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
 
 		ModelAndView mav;
+		/*
+		* 校验request
+		*  1. 请求的方法是否支持
+		*  2. 是否要求session
+		*/
 		checkRequest(request);
 
-		// Execute invokeHandlerMethod in synchronized block if required.
+		/*
+		*Execute invokeHandlerMethod in synchronized block if required.
+		* 是否要求同步锁
+		*/
 		if (this.synchronizeOnSession) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
@@ -772,14 +780,12 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				synchronized (mutex) {
 					mav = invokeHandlerMethod(request, response, handlerMethod);
 				}
-			}
-			else {
+			} else {
 				// No HttpSession available -> no mutex necessary
 				mav = invokeHandlerMethod(request, response, handlerMethod);
 			}
-		}
-		else {
-			// No synchronization on session demanded at all...
+		} else {
+			// No synchronization on session demanded at all...  不需要同步锁
 			mav = invokeHandlerMethod(request, response, handlerMethod);
 		}
 
@@ -830,11 +836,13 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	 * if view resolution is required.
 	 * @since 4.2
 	 * @see #createInvocableHandlerMethod(HandlerMethod)
+	 * 执行处理器，即进行业务逻辑的处理
 	 */
 	@Nullable
 	protected ModelAndView invokeHandlerMethod(HttpServletRequest request,
 			HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
 
+        // 通过request和response构建ServletWebRequest(HttpServletRequest的适配器)
 		ServletWebRequest webRequest = new ServletWebRequest(request, response);
 		try {
 			WebDataBinderFactory binderFactory = getDataBinderFactory(handlerMethod);

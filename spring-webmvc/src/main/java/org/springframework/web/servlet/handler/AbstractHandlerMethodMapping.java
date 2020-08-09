@@ -304,27 +304,36 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 	/**
 	 * Look up a handler method for the given request.
+	 * 通过request来获取处理器(Controller中的方法)
 	 */
 	@Override
 	protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
+		// 从request中获取请求路径
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
+		// 日志打印
 		if (logger.isDebugEnabled()) {
 			logger.debug("Looking up handler method for path " + lookupPath);
 		}
+		// 使用读锁来锁住MappingRegistry
 		this.mappingRegistry.acquireReadLock();
 		try {
+			// 通过请求路径找到处理器方法
 			HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
+			// 日志打印
 			if (logger.isDebugEnabled()) {
 				if (handlerMethod != null) {
 					logger.debug("Returning handler method [" + handlerMethod + "]");
-				}
-				else {
+				} else {
 					logger.debug("Did not find handler method for [" + lookupPath + "]");
 				}
 			}
+			/*
+			* 返回HandlerMethod 
+			* createWithResolvedBean会判断成员属性bean是否是对象，如果不是对象，则创建一个新的HandlerMethod。
+			*/
 			return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
-		}
-		finally {
+		} finally {
+			// 释放读锁
 			this.mappingRegistry.releaseReadLock();
 		}
 	}
@@ -337,31 +346,39 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @return the best-matching handler method, or {@code null} if no match
 	 * @see #handleMatch(Object, String, HttpServletRequest)
 	 * @see #handleNoMatch(Set, String, HttpServletRequest)
+	 * 通过request来获取“最合适的”处理器
 	 */
 	@Nullable
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
 		List<Match> matches = new ArrayList<>();
+		// 通过url从MappingRegistry中获取最符合条件的处理器，因为这里是通过url去获取的，因此可能获取多个。即url相同，请求方式不同。详见图:MappingRegistry_urlLookup2.png
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
 		if (directPathMatches != null) {
+			// 从中找最合适的处理器
 			addMatchingMappings(directPathMatches, matches, request);
 		}
+		// 如果找不到，则遍历所有的映射关系去查找
 		if (matches.isEmpty()) {
 			// No choice but to go through all mappings...
 			addMatchingMappings(this.mappingRegistry.getMappings().keySet(), matches, request);
 		}
 
+        // 找到了，则进一步判断
 		if (!matches.isEmpty()) {
 			Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
+			// 排序
 			matches.sort(comparator);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Found " + matches.size() + " matching mapping(s) for [" + lookupPath + "] : " + matches);
 			}
+			// 获取最合适的处理器
 			Match bestMatch = matches.get(0);
 			if (matches.size() > 1) {
 				if (CorsUtils.isPreFlightRequest(request)) {
 					return PREFLIGHT_AMBIGUOUS_MATCH;
 				}
 				Match secondBestMatch = matches.get(1);
+				// 如果两个处理器是一样的，则抛出异常。
 				if (comparator.compare(bestMatch, secondBestMatch) == 0) {
 					Method m1 = bestMatch.handlerMethod.getMethod();
 					Method m2 = secondBestMatch.handlerMethod.getMethod();
@@ -369,10 +386,12 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 							request.getRequestURL() + "': {" + m1 + ", " + m2 + "}");
 				}
 			}
+			// 将lookupPath作为request的attributes的属性放到request中
 			handleMatch(bestMatch.mapping, lookupPath, request);
+			// 返回处理器方法
 			return bestMatch.handlerMethod;
-		}
-		else {
+		}else {
+			// 没有找到，则返回null
 			return handleNoMatch(this.mappingRegistry.getMappings().keySet(), lookupPath, request);
 		}
 	}
@@ -483,6 +502,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 		private final Map<T, HandlerMethod> mappingLookup = new LinkedHashMap<>();
 
+        /**
+	     *  采用这种方法反序列化的时候，如果json字符串中有相同的key，存的时候值会以数组的方式保存,即T是一个链表。见图片MappingRegistry_urlLookup.png
+        **/
 		private final MultiValueMap<String, T> urlLookup = new LinkedMultiValueMap<>();
 
 		private final Map<String, List<HandlerMethod>> nameLookup = new ConcurrentHashMap<>();
