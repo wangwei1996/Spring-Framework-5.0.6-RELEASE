@@ -120,6 +120,14 @@ public interface BeanFactory {
 	 * beans <i>created</i> by the FactoryBean. For example, if the bean named
 	 * {@code myJndiObject} is a FactoryBean, getting {@code &myJndiObject}
 	 * will return the factory, not the instance returned by the factory.
+	 * 
+	 * 对FactoryBean的转义定义，提供获取FactoryBean的方式。
+	 * 如果使用bean的名字检索FactoryBean得到的对象是工厂生成的对象，
+	 * 如果需要得到工厂对象本身，则需要转义。
+	 * 例如:
+	 *   在xml中的配置: <bean id="userFactoryBean"  class="com.imooc.entity.factory.UserFactoryBean" /> // com.imooc.entity.factory.UserFactoryBeans实现了beans.factory.FactoryBean.java接口
+	 * 当: applicationContext.getBean("userFactoryBean")  返回的是FactoryBean的getObject返回的对象
+	 * 当: applicationContext.getBean("&userFactoryBean") 返回的是FactoryBean这个工厂本身,而非该工厂的getObject方法返回的对象
 	 */
 	String FACTORY_BEAN_PREFIX = "&";
 
@@ -245,6 +253,7 @@ public interface BeanFactory {
 	 * @throws NoSuchBeanDefinitionException if there is no bean with the given name
 	 * @see #getBean
 	 * @see #isPrototype
+	 * 判断这个Bean是否是单例
 	 */
 	boolean isSingleton(String name) throws NoSuchBeanDefinitionException;
 
