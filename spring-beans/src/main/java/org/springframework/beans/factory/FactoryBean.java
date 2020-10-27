@@ -20,9 +20,10 @@ import org.springframework.lang.Nullable;
 
 /**
  * Interface to be implemented by objects used within a {@link BeanFactory} which
- * are themselves factories for individual objects. If a bean implements this
+ * are themselves factories for individual(adj. 个人的；个别的；独特的 n. 个人，个体) objects. If a bean implements this
  * interface, it is used as a factory for an object to expose, not directly as a
  * bean instance that will be exposed itself.
+ * 接口将由在BeanFactory中的对象对应的类实现,这些对象本身就是单个对象的工厂。如果一个Bean实现了这个接口，他将被用作为生产对象的工厂来对外透出，而不是直接作为一个bean的实例来对外透出。
  *
  * <p><b>NB: A bean that implements this interface cannot be used as a normal bean.</b>
  * A FactoryBean is defined in a bean style, but the object exposed for bean
@@ -54,6 +55,11 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.aop.framework.ProxyFactoryBean
  * @see org.springframework.jndi.JndiObjectFactoryBean
+ * 
+ * 该接口的作用: 用于生成普通的Bean
+ *  例如: 在xml中的配置: <bean id="userFactoryBean"  class="com.imooc.entity.factory.UserFactoryBean" /> // com.imooc.entity.factory.UserFactoryBean实现了beans.factory.FactoryBean.java接口
+ *      当: applicationContext.getBean("userFactoryBean")  返回的是FactoryBean的getObject返回的对象,此时,Spring会调用UserFactoryBean实例的getObject方法来提供指定的Bean实例。
+ * 
  */
 public interface FactoryBean<T> {
 
@@ -73,6 +79,8 @@ public interface FactoryBean<T> {
 	 * @return an instance of the bean (can be {@code null})
 	 * @throws Exception in case of creation errors
 	 * @see FactoryBeanNotInitializedException
+	 * 
+	 * 返回由该工厂管理的Bean实例
 	 */
 	@Nullable
 	T getObject() throws Exception;
@@ -95,6 +103,8 @@ public interface FactoryBean<T> {
 	 * @return the type of object that this FactoryBean creates,
 	 * or {@code null} if not known at the time of the call
 	 * @see ListableBeanFactory#getBeansOfType
+	 *
+	 * 返回由该工厂管理的Bean的类型
 	 */
 	@Nullable
 	Class<?> getObjectType();
@@ -123,6 +133,7 @@ public interface FactoryBean<T> {
 	 * @return whether the exposed object is a singleton
 	 * @see #getObject()
 	 * @see SmartFactoryBean#isPrototype()
+	 * 该工厂管理的Bean是否是单例模式?
 	 */
 	default boolean isSingleton() {
 		return true;

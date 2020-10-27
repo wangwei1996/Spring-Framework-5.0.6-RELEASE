@@ -112,11 +112,14 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization
  * @see DisposableBean#destroy
  * @see org.springframework.beans.factory.support.RootBeanDefinition#getDestroyMethodName
+ * 
+ * BeanFactory接口是Spring中的根接口,是用于管理Spring 中的Bean的根接口,Spring 中生成的Bean都是由这个接口的实现类来管理的。该接口定义了IOC容器的基本能力,Spring中的IOC容器都必须直接或间接地实现该接口
+ * 例如: ApplicationContext就是实现了该接口。
  */
 public interface BeanFactory {
 
 	/**
-	 * Used to dereference a {@link FactoryBean} instance and distinguish it from
+	 * Used to dereference(解除引用) a {@link FactoryBean} instance and distinguish(区分,区别) it from
 	 * beans <i>created</i> by the FactoryBean. For example, if the bean named
 	 * {@code myJndiObject} is a FactoryBean, getting {@code &myJndiObject}
 	 * will return the factory, not the instance returned by the factory.
@@ -125,7 +128,7 @@ public interface BeanFactory {
 	 * 如果使用bean的名字检索FactoryBean得到的对象是工厂生成的对象，
 	 * 如果需要得到工厂对象本身，则需要转义。
 	 * 例如:
-	 *   在xml中的配置: <bean id="userFactoryBean"  class="com.imooc.entity.factory.UserFactoryBean" /> // com.imooc.entity.factory.UserFactoryBeans实现了beans.factory.FactoryBean.java接口
+	 *   在xml中的配置: <bean id="userFactoryBean"  class="com.imooc.entity.factory.UserFactoryBean" /> // com.imooc.entity.factory.UserFactoryBean实现了beans.factory.FactoryBean.java接口
 	 * 当: applicationContext.getBean("userFactoryBean")  返回的是FactoryBean的getObject返回的对象
 	 * 当: applicationContext.getBean("&userFactoryBean") 返回的是FactoryBean这个工厂本身,而非该工厂的getObject方法返回的对象
 	 */
@@ -133,14 +136,19 @@ public interface BeanFactory {
 
 
 	/**
-	 * Return an instance, which may be shared or independent, of the specified bean.
+	 * independent adj. 独立的；单独的；无党派的；不受约束的 n. 独立自主者；无党派者
+	 * shared (adj. 共享的 n. 共享 v. 共享（share的过去式和过去分词）)
+	 * retain: vt. 保持；雇；记住
+	 * retrieve: vt. [计] 检索；恢复；重新得到 vi. 找回猎物 n. [计] 检索；恢复，取回
+	 *
+	 * Return an instance, which may be shared or independent , of the specified bean.
 	 * <p>This method allows a Spring BeanFactory to be used as a replacement for the
 	 * Singleton or Prototype design pattern. Callers may retain references to
 	 * returned objects in the case of Singleton beans.
-	 * <p>Translates aliases back to the corresponding canonical bean name.
+	 * <p>Translates aliases back to the corresponding canonical bean name.(将别名翻译回相应的规范bean名称)
 	 * Will ask the parent factory if the bean cannot be found in this factory instance.
-	 * @param name the name of the bean to retrieve
-	 * @return an instance of the bean
+	 * @param name the name of the bean to retrieve  要获取的Bean的名字
+	 * @return an instance of the bean 返回指定Bean的实例
 	 * @throws NoSuchBeanDefinitionException if there is no bean definition
 	 * with the specified name
 	 * @throws BeansException if the bean could not be obtained
@@ -148,19 +156,20 @@ public interface BeanFactory {
 	Object getBean(String name) throws BeansException;
 
 	/**
+	* whatever: det. 任何事物；不管什么；究竟是什么；（非正式）无所谓 pron. 无论什么；诸如此类 adj. 都，任何 adv. 一点儿都不，丝毫；（非正式）不管怎样 conj. 任何事物 int. （非正式）随便（常暗示不感兴趣）
 	 * Return an instance, which may be shared or independent, of the specified bean.
-	 * <p>Behaves the same as {@link #getBean(String)}, but provides a measure of type
+	 * <p>Behaves(行为) the same as {@link #getBean(String)}, but provides a measure(测量，尺寸) of type
 	 * safety by throwing a BeanNotOfRequiredTypeException if the bean is not of the
 	 * required type. This means that ClassCastException can't be thrown on casting
 	 * the result correctly, as can happen with {@link #getBean(String)}.
 	 * <p>Translates aliases back to the corresponding canonical bean name.
 	 * Will ask the parent factory if the bean cannot be found in this factory instance.
-	 * @param name the name of the bean to retrieve
+	 * @param name the name of the bean to retrieve  要获取的Bean的名称
 	 * @param requiredType type the bean must match. Can be an interface or superclass
 	 * of the actual class, or {@code null} for any match. For example, if the value
 	 * is {@code Object.class}, this method will succeed whatever the class of the
-	 * returned instance.
-	 * @return an instance of the bean
+	 * returned instance. Bean必须匹配的是requiredType类型，requiredType可以实际Bean的接口或者是超类，或者是传入null来匹配所有。例如如果传入Object.class,这个方法会返回任意类型的实例
+	 * @return an instance of the bean 返回Bean的实例
 	 * @throws NoSuchBeanDefinitionException if there is no such bean definition
 	 * @throws BeanNotOfRequiredTypeException if the bean is not of the required type
 	 * @throws BeansException if the bean could not be created
@@ -201,6 +210,13 @@ public interface BeanFactory {
 	<T> T getBean(Class<T> requiredType) throws BeansException;
 
 	/**
+	 * explicit： adj. 明确的；清楚的；直率的；详述的
+	 * territory： n. 领土，领域；范围；地域；版图
+	 * conventional：adj. 符合习俗的，传统的；常见的；惯例的 
+	 * extensive：adj. 广泛的；大量的；广阔的
+	 * retrieval： 检索；恢复；取回；拯救
+	 * across: 
+	 * 
 	 * Return an instance, which may be shared or independent, of the specified bean.
 	 * <p>Allows for specifying explicit constructor arguments / factory method arguments,
 	 * overriding the specified default arguments (if any) in the bean definition.
@@ -209,7 +225,7 @@ public interface BeanFactory {
 	 * of the given type. For more extensive retrieval operations across sets of beans,
 	 * use {@link ListableBeanFactory} and/or {@link BeanFactoryUtils}.
 	 * @param requiredType type the bean must match; can be an interface or superclass.
-	 * {@code null} is disallowed.
+	 * {@code null} is disallowed. requiredType必须和Bean匹配，可以是Bean的接口类型或者是Bean的超类
 	 * @param args arguments to use when creating a bean instance using explicit arguments
 	 * (only applied when creating a new instance as opposed to retrieving an existing one)
 	 * @return an instance of the bean
@@ -223,6 +239,8 @@ public interface BeanFactory {
 
 
 	/**
+	 * externally: adv. 外部地；外表上，外形上
+	 * 
 	 * Does this bean factory contain a bean definition or externally registered singleton
 	 * instance with the given name?
 	 * <p>If the given name is an alias, it will be translated back to the corresponding
@@ -236,6 +254,8 @@ public interface BeanFactory {
 	 * will be able to obtain an instance for the same name.
 	 * @param name the name of the bean to query
 	 * @return whether a bean with the given name is present
+	 *
+	 * 判断IOC容器中是否包含指定名称的Bean Definition或者从外部注册的单例实例
 	 */
 	boolean containsBean(String name);
 
@@ -272,6 +292,7 @@ public interface BeanFactory {
 	 * @since 2.0.3
 	 * @see #getBean
 	 * @see #isSingleton
+	 * 判断这个Bean是否是Prototype
 	 */
 	boolean isPrototype(String name) throws NoSuchBeanDefinitionException;
 
@@ -289,6 +310,7 @@ public interface BeanFactory {
 	 * @since 4.2
 	 * @see #getBean
 	 * @see #getType
+	 * 判断name为name的Bean的类型是否为typeToMatch
 	 */
 	boolean isTypeMatch(String name, ResolvableType typeToMatch) throws NoSuchBeanDefinitionException;
 
@@ -306,10 +328,15 @@ public interface BeanFactory {
 	 * @since 2.0.1
 	 * @see #getBean
 	 * @see #getType
+	 * 
+	 * 判断name为name的Bean的类型是否为typeToMatch
 	 */
 	boolean isTypeMatch(String name, @Nullable Class<?> typeToMatch) throws NoSuchBeanDefinitionException;
 
 	/**
+	 * Determine: v. （使）下决心，（使）做出决定 vt. 决定，确定；判定，判决；限定 vi. 确定；决定；判决，终止；[主用于法律]了结，终止，结束
+	 * specifically:  adv. 特别地；明确地 (短语： more specifically 更具体地说)
+	 * 获取给定名称的Bean的类型
 	 * Determine the type of the bean with the given name. More specifically,
 	 * determine the type of object that {@link #getBean} would return for the given name.
 	 * <p>For a {@link FactoryBean}, return the type of object that the FactoryBean creates,
@@ -336,6 +363,7 @@ public interface BeanFactory {
 	 * @param name the bean name to check for aliases
 	 * @return the aliases, or an empty array if none
 	 * @see #getBean
+	 * 返回给定名称的Bean的别名
 	 */
 	String[] getAliases(String name);
 
