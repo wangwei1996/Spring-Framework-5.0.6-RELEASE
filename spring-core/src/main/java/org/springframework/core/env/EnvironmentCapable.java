@@ -42,6 +42,7 @@ public interface EnvironmentCapable {
 
 	/**
 	 * Return the {@link Environment} associated with this component.
+	 * 获取Spring的启动参数
 	 */
 	Environment getEnvironment();
 
