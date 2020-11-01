@@ -22,9 +22,20 @@ import org.springframework.core.AttributeAccessor;
 import org.springframework.lang.Nullable;
 
 /**
+ * supplied:adj. 有...提供的；备有...的 v. 提供；供应（supply的过去式）
+ * concrete: adj. 混凝土的；实在的，具体的；有形的 vi. 凝结 vt. 使凝固；用混凝土修筑 n. 具体物；凝结物
+ * further: adv. 更远地；远非（如此）；进一步地；而且；处于更高阶段 adj. 更多的，附加的；更远的；进一步的，深一层的 v. 促进，增进，助长
+ * implementations: n. 安装启用，履行（implementation的复数形式）
+ * minimal: adj. 最低的；最小限度的
+ * intention: n. 意图；目的；意向；愈合
+ * introspect: vi. 反省；内省 vt. 对…进行自省
+ * 
+ * 
  * A BeanDefinition describes a bean instance, which has property values,
  * constructor argument values, and further information supplied by
  * concrete implementations.
+ * 
+ * BeanDefinition描述了一个Bean的实例，具体的信息有成员属性，构造函数参数以及由具体的实现提供的信息
  *
  * <p>This is just a minimal interface: The main intention is to allow a
  * {@link BeanFactoryPostProcessor} such as {@link PropertyPlaceholderConfigurer}

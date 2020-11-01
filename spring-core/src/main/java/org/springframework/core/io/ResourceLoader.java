@@ -20,6 +20,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ResourceUtils;
 
 /**
+ * Strategy: 战略，策略
+ * extended: adj. 延伸的；扩大的；长期的；广大的 v. 延长；扩充（extend 的过去分词）
+ * 
+ * 
  * Strategy interface for loading resources (e.. class path or file system
  * resources). An {@link org.springframework.context.ApplicationContext}
  * is required to provide this functionality, plus extended
@@ -38,10 +42,14 @@ import org.springframework.util.ResourceUtils;
  * @see org.springframework.core.io.support.ResourcePatternResolver
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ResourceLoaderAware
+ * 
+ * ResourceLoader接口需要被实现，用于返回Resource实例
  */
 public interface ResourceLoader {
 
-	/** Pseudo URL prefix for loading from the class path: "classpath:" */
+	/** 
+	 * Pseudo: n. 伪君子；假冒的人 adj. 冒充的，假的
+	 * Pseudo URL prefix for loading from the class path: "classpath:" */
 	String CLASSPATH_URL_PREFIX = ResourceUtils.CLASSPATH_URL_PREFIX;
 
 
@@ -63,16 +71,25 @@ public interface ResourceLoader {
 	 * @see #CLASSPATH_URL_PREFIX
 	 * @see Resource#exists()
 	 * @see Resource#getInputStream()
+	 * 
+	 * 根据指定的资源位置来返回一个资源处理器(Resource对象)
 	 */
 	Resource getResource(String location);
 
 	/**
+	 * Expose: vt. 揭露，揭发；使曝光；显示
+	 * uniform: adj. 统一的；一致的；相同的；均衡的；始终如一的 n. 制服 vt. 使穿制服；使成一样
+	 * manner:  n. 方式；习惯；种类；规矩；风俗
+	 * 
 	 * Expose the ClassLoader used by this ResourceLoader.
 	 * <p>Clients which need to access the ClassLoader directly can do so
 	 * in a uniform manner with the ResourceLoader, rather than relying
 	 * on the thread context ClassLoader.
 	 * @return the ClassLoader
 	 * @see org.springframework.util.ClassUtils#getDefaultClassLoader()
+	 * 
+	 * 公开ResourceLoader所使用的类加载器.
+	 * 需要直接访问类加载器的客户端可以通过ResourceLoader以统一的方式进行访问
 	 */
 	@Nullable
 	ClassLoader getClassLoader();

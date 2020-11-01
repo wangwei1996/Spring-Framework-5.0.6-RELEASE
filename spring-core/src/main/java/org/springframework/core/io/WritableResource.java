@@ -28,6 +28,8 @@ import java.nio.channels.WritableByteChannel;
  * @author Juergen Hoeller
  * @since 3.1
  * @see java.io.OutputStream
+ * 
+ * 该接口是对Resource接口的拓展，目的是支持对资源的写操作
  */
 public interface WritableResource extends Resource {
 

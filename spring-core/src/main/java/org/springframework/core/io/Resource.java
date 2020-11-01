@@ -48,18 +48,27 @@ import org.springframework.lang.Nullable;
  * @see PathResource
  * @see ByteArrayResource
  * @see InputStreamResource
+ * 
+ * Spring中的Resource接口是对物理资源访问的抽象，是一个强大的接口，为低级资源提供了访问方式。
+ * Resource是Spring中对资源访问的抽象，其本身并不提供资源访问的方式，而全部由实现类来实现
+ * 
  */
 public interface Resource extends InputStreamSource {
 
 	/**
-	 * Determine whether this resource actually exists in physical form.
+	 * Determine: 决定，确定，下定决心),判决
+	 * 
+	 * Determine  whether this resource actually exists in physical form. ( 判断该资源是否以物理的形式真实存在)
 	 * <p>This method performs a definitive existence check, whereas the
 	 * existence of a {@code Resource} handle only guarantees a valid
 	 * descriptor handle.
+	 *
 	 */
 	boolean exists();
 
 	/**
+	 *  via: 经由，通过，凭借
+	 * 
 	 * Indicate whether the contents of this resource can be read via
 	 * {@link #getInputStream()}.
 	 * <p>Will be {@code true} for typical resource descriptors;
@@ -67,6 +76,8 @@ public interface Resource extends InputStreamSource {
 	 * However, a value of {@code false} is a definitive indication
 	 * that the resource content cannot be read.
 	 * @see #getInputStream()
+	 * 
+	 * 表明是否可以通过getInputStream方法来读取资源的内容
 	 */
 	default boolean isReadable() {
 		return true;
@@ -77,6 +88,8 @@ public interface Resource extends InputStreamSource {
 	 * If {@code true}, the InputStream cannot be read multiple times,
 	 * and must be read and closed to avoid resource leaks.
 	 * <p>Will be {@code false} for typical resource descriptors.
+	 * 
+	 * 表明这个资源是否已经被一个打开的流在处理
 	 */
 	default boolean isOpen() {
 		return false;
@@ -89,6 +102,7 @@ public interface Resource extends InputStreamSource {
 	 * <p>This is conservatively {@code false} by default.
 	 * @since 5.0
 	 * @see #getFile()
+	 * 表明这个资源是否代表着文件系统中的一个文件
 	 */
 	default boolean isFile() {
 		return false;
@@ -98,6 +112,8 @@ public interface Resource extends InputStreamSource {
 	 * Return a URL handle for this resource.
 	 * @throws IOException if the resource cannot be resolved as URL,
 	 * i.e. if the resource is not available as descriptor
+	 * 
+	 * 返回这个资源的URL句柄
 	 */
 	URL getURL() throws IOException;
 
@@ -106,6 +122,8 @@ public interface Resource extends InputStreamSource {
 	 * @throws IOException if the resource cannot be resolved as URI,
 	 * i.e. if the resource is not available as descriptor
 	 * @since 2.5
+	 * 
+	 * 返回这个资源的URI句柄
 	 */
 	URI getURI() throws IOException;
 
@@ -115,6 +133,8 @@ public interface Resource extends InputStreamSource {
 	 * absolute file path, i.e. if the resource is not available in a file system
 	 * @throws IOException in case of general resolution/reading failures
 	 * @see #getInputStream()
+	 * 
+	 * 返回这个资源的文件句柄
 	 */
 	File getFile() throws IOException;
 
@@ -170,6 +190,8 @@ public interface Resource extends InputStreamSource {
 	 * <p>Implementations are also encouraged to return this value
 	 * from their {@code toString} method.
 	 * @see Object#toString()
+	 * 
+	 * 返回资源的描述，用于错误输出当使用资源时
 	 */
 	String getDescription();
 

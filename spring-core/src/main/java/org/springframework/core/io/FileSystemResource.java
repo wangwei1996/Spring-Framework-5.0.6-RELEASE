@@ -47,6 +47,9 @@ import org.springframework.util.StringUtils;
  * @see PathResource
  * @see java.io.File
  * @see java.nio.file.Files
+ * 
+ * FileSystemResource 是Resource的实现，目的是为了操纵File文件
+ * 
  */
 public class FileSystemResource extends AbstractResource implements WritableResource {
 

@@ -37,10 +37,14 @@ import java.io.InputStream;
  * @see Resource
  * @see InputStreamResource
  * @see ByteArrayResource
+ * 
+ * 
  */
 public interface InputStreamSource {
 
 	/**
+	 * fresh: 开始、新生、新鲜的
+	 * 
 	 * Return an {@link InputStream} for the content of an underlying resource.
 	 * <p>It is expected that each call creates a <i>fresh</i> stream.
 	 * <p>This requirement is particularly important when you consider an API such
@@ -50,6 +54,12 @@ public interface InputStreamSource {
 	 * @return the input stream for the underlying resource (must not be {@code null})
 	 * @throws java.io.FileNotFoundException if the underlying resource doesn't exist
 	 * @throws IOException if the content stream could not be opened
+	 * 
+	 * 定位和打开资源，返回读取资源的输入流。
+	 * 每次调用都会返回一个新的输入流。 需要调用者去关闭该流
+	 * 
+	 * getInputStream(): locates and opens the resource, returning an InputStream for reading from the resource.
+	 * It is expected that each invocation returns a fresh(开始，新生，新鲜的) InputStream. It is the responsibility of the caller to close the stream.
 	 */
 	InputStream getInputStream() throws IOException;
 
