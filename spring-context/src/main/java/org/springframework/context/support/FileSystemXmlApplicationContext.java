@@ -124,21 +124,33 @@ public class FileSystemXmlApplicationContext extends AbstractXmlApplicationConte
 	/**
 	 * Create a new FileSystemXmlApplicationContext with the given parent,
 	 * loading the definitions from the given XML files.
-	 * @param configLocations array of file paths
-	 * @param refresh whether to automatically refresh the context,
+	 * 根据给定的父上下文来创建一个FileSystemXmlApplicationContext容器，并且从给定的xml文件中加载Bean
+	 * @param configLocations array of file paths(配置文件集合)
+	 * @param refresh whether to automatically(自动地) refresh the context,
 	 * loading all bean definitions and creating all singletons.
-	 * Alternatively, call refresh manually after further configuring the context.
-	 * @param parent the parent context
+	 * Alternatively(要不，或者), call refresh manually(手动地) after further（更远的，进一步，深一层的） configuring the context.
+	 * @param parent the parent context (父类上下文)
 	 * @throws BeansException if context creation failed
 	 * @see #refresh()
 	 */
 	public FileSystemXmlApplicationContext(
 			String[] configLocations, boolean refresh, @Nullable ApplicationContext parent)
 			throws BeansException {
-
+        
+		/** 
+		 * parent是抽象类org.springframework.context.support.AbstractApplicationContext的成员变量
+		 * 这个parent的作用是什么?使用了什么设计模式?
+		 */
 		super(parent);
+		/**
+		*  解析配置文件,进行placeholder的解析,进入方法可以看出，使用的是Environment实例的能力来进行解析的
+		*  例如: ${JAVA_HOME}/spring-config.xml 会解析为 环境变量中JAVA_HOME变量的值/spring-config.xml
+		* （如JAVA_HOME配置的是E:\SoftWareInstalled\jdk\Java\jdk1.8.0_201,那么解析出来的就是: E:\SoftWareInstalled\jdk\Java\jdk1.8.0_201/spring-config.xml）
+		*/
 		setConfigLocations(configLocations);
+		// 判断是否需要刷新上下文
 		if (refresh) {
+			// 如上定义，会调用org.springframework.context.support.AbstractApplicationContext#refresh方法
 			refresh();
 		}
 	}

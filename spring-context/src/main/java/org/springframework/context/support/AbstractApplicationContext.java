@@ -514,13 +514,26 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.applicationListeners;
 	}
 
+   /**
+    * obtain: vi. 获得；流行
+	* fresh: adj. 新鲜的；清新的；淡水的；无经验的 n. 开始；新生；泛滥 adv. 刚刚，才；最新地
+    * [！！！重要]
+	*
+	*/
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
-			// Prepare this context for refreshing.
+			/**
+			 * Prepare this context for refreshing. 
+			 * 为刷新上下文做准备
+			 */
 			prepareRefresh();
 
-			// Tell the subclass to refresh the internal bean factory.
+			/**
+			  * [重要！！！]
+			  * Tell the subclass to refresh the internal bean factory.
+			  * 告诉子类刷新内部的BeanFactory
+			  */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -580,8 +593,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 * as well as: 和...一样
+	 * performing: 表演，履行
 	 * Prepare this context for refreshing, setting its startup date and
 	 * active flag as well as performing any initialization of property sources.
+	 * 为刷新动作准备上下文，设置开始时间，是否激活的标识以及执行和配置文件有关的任何初始化动作
 	 */
 	protected void prepareRefresh() {
 		this.startupDate = System.currentTimeMillis();
@@ -592,15 +608,30 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			logger.info("Refreshing " + this);
 		}
 
-		// Initialize any placeholder property sources in the context environment
+		/**
+		  * Initialize any placeholder property sources in the context environment
+		  * 初始化上下文环境中的任何占位符属性源
+		  */
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable
 		// see ConfigurablePropertyResolver#setRequiredProperties
+
+		/**
+		  * 验证一些环境变量是否存在,若存在环境变量不存在,则会禁止Spring启动,见方法: org.springframework.core.env.AbstractPropertyResolver#validateRequiredProperties
+		  *    1. 如何将环境变量的key存入集合requiredProperties？
+          *       - 调用AbstractPropertyResolver类的setRequiredProperties方法，注意该方法是向集合requiredProperties中添加数据，并不会将已有数据清除；
+          *
+          *    2. 在什么时候执行AbstractPropertyResolver类的setRequiredProperties方法设置key？
+           *       - 创建一个AbstractApplicationContext的子类，重写initPropertySources方法，在此方法中执行AbstractPropertyResolver类的setRequiredProperties；
+		  */
 		getEnvironment().validateRequiredProperties();
 
-		// Allow for the collection of early ApplicationEvents,
-		// to be published once the multicaster is available...
+       /**
+	     * Allow for the collection of early ApplicationEvents,to be published once the multicaster(多路广播，多路发送) is available...
+		 *
+		 * 允许收集早期的应用事件，一旦多播机可用就发布。
+		 */
 		this.earlyApplicationEvents = new LinkedHashSet<>();
 	}
 
@@ -615,7 +646,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 	/**
 	 * Tell the subclass to refresh the internal bean factory.
-	 * @return the fresh BeanFactory instance
+	 * 告诉子类刷新内部的BeanFactory
+	 * @return the fresh BeanFactory instance 新的BeanFactory实例
 	 * @see #refreshBeanFactory()
 	 * @see #getBeanFactory()
 	 */
