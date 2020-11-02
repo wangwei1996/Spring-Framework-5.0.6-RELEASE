@@ -652,6 +652,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		/**
+		 * 请参见方法: org.springframework.context.support.AbstractRefreshableApplicationContext#refreshBeanFactory(基于org.springframework.context.support.FileSystemXmlApplicationContext分析)
+		 *
+		 */
 		refreshBeanFactory();
 		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 		if (logger.isDebugEnabled()) {
