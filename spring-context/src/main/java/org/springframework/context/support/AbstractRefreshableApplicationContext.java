@@ -120,21 +120,38 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 
 
 	/**
+	 * performs:  执行，表演
+	 * underlying:adj. 潜在的；根本的；在下面的；优先的 
+	 * the next phase of: 下一阶段的
 	 * This implementation performs an actual refresh of this context's underlying
 	 * bean factory, shutting down the previous bean factory (if any) and
 	 * initializing a fresh bean factory for the next phase of the context's lifecycle.
+	 * 
+	 *  这个实现会对底层的Bean Factory进行实际的刷新，关闭之前的Bean Factory并且为下一阶段的容器初始化一个新的BeanFactory
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
+		// 判断一个容器是否有一个Bean Factory
 		if (hasBeanFactory()) {
+			// 销毁上下文容器管理的所有的Bean
 			destroyBeans();
+			//  关闭BeanFactory
 			closeBeanFactory();
 		}
 		try {
+			// 创建一个新的BeanFactory,为当前的上下文
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			// 设置序列化ID,为的是这个BeanFactory能够根据这个ID反序列化回来
 			beanFactory.setSerializationId(getId());
+			// 为本次的上下文定制BeanFactory,例如是否允许BeanDefinition的覆盖以及环形依赖
 			customizeBeanFactory(beanFactory);
+			/** 
+			 * 加载BeanDefinition到指定的BeanFactory,对于org.springframework.context.support.AbstractRefreshableApplicationContext来说，
+			 * 是由子类来实现的,因为不同的BeanDefinition需要不同的解析，例如基础XML，基于注解的等等
+			 * 如: org.springframework.context.support.AbstractXmlApplicationContext#loadBeanDefinitions方法,在此，进入该方法
+			 * */ 
 			loadBeanDefinitions(beanFactory);
+			// 将该BeanFactory赋值到当前上下文（context）
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;
 			}
@@ -211,6 +228,8 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	}
 
 	/**
+	 * 为这个上下文定制一个内部的BeanFactory
+	 * 
 	 * Customize the internal bean factory used by this context.
 	 * Called for each {@link #refresh()} attempt.
 	 * <p>The default implementation applies this context's

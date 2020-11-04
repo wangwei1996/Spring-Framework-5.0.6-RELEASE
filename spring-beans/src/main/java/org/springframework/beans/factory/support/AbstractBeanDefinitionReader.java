@@ -196,31 +196,42 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 
 	/**
 	 * Load bean definitions from the specified resource location.
+	 * 从指定的资源文件中加载Bean Definition
 	 * <p>The location can also be a location pattern, provided that the
 	 * ResourceLoader of this bean definition reader is a ResourcePatternResolver.
+	 * 
+	 * 这个资源文件的位置可以是一个模式，提供的Bean Definition Reader是一个模式解析器
+	 * 
 	 * @param location the resource location, to be loaded with the ResourceLoader
 	 * (or ResourcePatternResolver) of this bean definition reader
 	 * @param actualResources a Set to be filled with the actual Resource objects
 	 * that have been resolved during the loading process. May be {@code null}
 	 * to indicate that the caller is not interested in those Resource objects.
-	 * @return the number of bean definitions found
+	 * @return the number of bean definitions found  返回加载的Bean Definition的数量
 	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 	 * @see #getResourceLoader()
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource)
 	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
 	 */
 	public int loadBeanDefinitions(String location, @Nullable Set<Resource> actualResources) throws BeanDefinitionStoreException {
+		// 获取资源加载器
 		ResourceLoader resourceLoader = getResourceLoader();
 		if (resourceLoader == null) {
 			throw new BeanDefinitionStoreException(
 					"Cannot import bean definitions from location [" + location + "]: no ResourceLoader available");
 		}
 
-		// ResourcePatternResolver 用于加载多个文件或者能够加载Ant风格路径的文件资源
+		/**
+		 * ResourcePatternResolver 用于加载多个文件或者能够加载Ant风格路径的文件资源
+		 * 
+		 * FileSystemXmlApplication是使用的是org.springframework.core.io.support.PathMatchingResourcePatternResolver
+		 */
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
+				// 根据配置文件地址构建Resource
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+				// 从Resource中加载Bean definition，并返回加载的数量(做减法)
 				int loadCount = loadBeanDefinitions(resources);
 				if (actualResources != null) {
 					for (Resource resource : resources) {

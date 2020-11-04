@@ -517,7 +517,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
    /**
     * obtain: vi. 获得；流行
 	* fresh: adj. 新鲜的；清新的；淡水的；无经验的 n. 开始；新生；泛滥 adv. 刚刚，才；最新地
-    * [！！！重要]
+    * [!!!!重要]
 	*
 	*/
 	@Override

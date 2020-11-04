@@ -27,9 +27,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 
 /**
- * Convenient base class for {@link org.springframework.context.ApplicationContext}
- * implementations, drawing configuration from XML documents containing bean definitions
+ * 
+ * Convenient(方便的) base class for {@link org.springframework.context.ApplicationContext}
+ * implementations(这是一个方面ApplicationContext实现者实现的基类), drawing（画） configuration from XML documents containing bean definitions
  * understood by an {@link org.springframework.beans.factory.xml.XmlBeanDefinitionReader}.
+ * 从xml文档中描述能够被XmlBeanDefinitionReader理解的Bean Definition
  *
  * <p>Subclasses just have to implement the {@link #getConfigResources} and/or
  * the {@link #getConfigLocations} method. Furthermore, they might override
@@ -72,25 +74,40 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 
 
 	/**
+	 * via: 通过
+	 * 
 	 * Loads the bean definitions via an XmlBeanDefinitionReader.
+	 * 通过XmlBeanDefinitionReader加载Bean Definition
 	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 	 * @see #initBeanDefinitionReader
 	 * @see #loadBeanDefinitions
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
-		// Create a new XmlBeanDefinitionReader for the given BeanFactory.
+		/**
+		 *  Create a new XmlBeanDefinitionReader for the given BeanFactory.
+		 *  通过给定的BeanFactory创建一个新的XmlBeanDefinitionReader
+		 * 
+		 *  注意：该参数类型是: org.springframework.beans.factory.support.BeanDefinitionRegistry
+		 *   DefaultListableBeanFactory 实现了BeanDefinitionRegistry，从而将自身作为一个BeanDefinitionRegistry来提供给BeanDefinitionReader来使用
+		 *  
+		 */
 		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
 
-		// Configure the bean definition reader with this context's
-		// resource loading environment.
+		// Configure the bean definition reader with this context's resource loading environment.
 		beanDefinitionReader.setEnvironment(this.getEnvironment());
+		// 
 		beanDefinitionReader.setResourceLoader(this);
+		// EntityResolver: EntityResolver 就是用来处理 XML 验证的
 		beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
 
-		// Allow a subclass to provide custom initialization of the reader,
-		// then proceed with actually loading the bean definitions.
+		/**
+		 * Allow a subclass to provide custom initialization of the reader,then proceed with actually loading the bean definitions.
+		 * 允许子类提供一个定制化的初始化动作给Reader,然后继续实际加载bean definition
+		 */
 		initBeanDefinitionReader(beanDefinitionReader);
+		/** 进行Bean Definition的加载，(因为基于FileSystemXmlApplicationContext分析)详见:org.springframework.context.support
+		* .AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.xml.XmlBeanDefinitionReader) */
 		loadBeanDefinitions(beanDefinitionReader);
 	}
 
@@ -108,6 +125,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 
 	/**
 	 * Load the bean definitions with the given XmlBeanDefinitionReader.
+	 * 通过给定的XmlBeanDefinitionReader加载Bean definition
 	 * <p>The lifecycle of the bean factory is handled by the {@link #refreshBeanFactory}
 	 * method; hence this method is just supposed to load and/or register bean definitions.
 	 * @param reader the XmlBeanDefinitionReader to use
@@ -125,6 +143,11 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 		}
 		String[] configLocations = getConfigLocations();
 		if (configLocations != null) {
+			/**
+			 * 详见org.springframework.beans.factory.support.AbstractBeanDefinitionReader#loadBeanDefinitions(java.lang.String, java.util.Set<org.springframework.core.io.Resource>)方法
+			 * 
+			 * 
+			 */
 			reader.loadBeanDefinitions(configLocations);
 		}
 	}
