@@ -66,8 +66,10 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
 
 	/**
-	 * Role hint indicating that a {@code BeanDefinition} is a major part
+	 * Role hint indicating(指示) that a {@code BeanDefinition} is a major part
 	 * of the application. Typically corresponds to a user-defined bean.
+	 * 
+	 * 表明该BeanDefnition是应用程序的主要部分，通常对应用户自定义的Bean
 	 */
 	int ROLE_APPLICATION = 0;
 
@@ -79,6 +81,8 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * of when looking more closely at a particular
 	 * {@link org.springframework.beans.factory.parsing.ComponentDefinition},
 	 * but not when looking at the overall configuration of an application.
+	 * 
+	 * 用于配置
 	 */
 	int ROLE_SUPPORT = 1;
 
@@ -87,6 +91,8 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 	 * entirely background role and has no relevance to the end-user. This hint is
 	 * used when registering beans that are completely part of the internal workings
 	 * of a {@link org.springframework.beans.factory.parsing.ComponentDefinition}.
+	 * 
+	 * 与中断用户无关，完全是后台角色
 	 */
 	int ROLE_INFRASTRUCTURE = 2;
 
