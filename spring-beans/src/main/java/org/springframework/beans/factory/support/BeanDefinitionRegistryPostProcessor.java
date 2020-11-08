@@ -20,12 +20,18 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 
 /**
+ * kicks in: 踢开，开始生效
+ * BeanFactoryPostProcessor detection(侦查，探测，发觉) kicks in. In particular,
+ * particular: 特别的，详细的，独有的
  * Extension to the standard {@link BeanFactoryPostProcessor} SPI, allowing for
- * the registration of further bean definitions <i>before</i> regular
- * BeanFactoryPostProcessor detection kicks in. In particular,
+ * the registration(登记，注册) of further(更远的，更多的) bean definitions <i>before</i> regular(定期的，有规则的)
+ * BeanFactoryPostProcessor detection(侦查，探测，发觉) kicks in. In particular,
  * BeanDefinitionRegistryPostProcessor may register further bean definitions
  * which in turn define BeanFactoryPostProcessor instances.
  *
+ * 拓展到标准的BeanFactoryPostProcessor SPI，允许在常规的BeanFactoryPostProcessor探测开始之前定义更多的BeanDefinition，
+ * 特别是BeanDefinitionRegistryPostProcessor允许注册更多的BeanDefinition，这些定义也反过来又定义了BeanFactoryPostProcessor实例
+ * 
  * @author Juergen Hoeller
  * @since 3.0.1
  * @see org.springframework.context.annotation.ConfigurationClassPostProcessor
