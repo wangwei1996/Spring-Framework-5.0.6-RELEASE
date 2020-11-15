@@ -224,6 +224,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see org.springframework.beans.factory.support.DefaultListableBeanFactory#setAllowRawInjectionDespiteWrapping
 	 */
 	protected DefaultListableBeanFactory createBeanFactory() {
+		// getInternalParentBeanFactory() Debug时返回NULL
 		return new DefaultListableBeanFactory(getInternalParentBeanFactory());
 	}
 

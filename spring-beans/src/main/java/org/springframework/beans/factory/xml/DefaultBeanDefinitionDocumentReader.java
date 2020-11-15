@@ -92,7 +92,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 */
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
-		// readerContext : 包装好的Resource对象->org.springframework.beans.factory.xml.XmlBeanDefinitionReader#createReaderContext
+		/**
+		 * readerContext : 包装好的Resource对象->org.springframework.beans.factory.xml.XmlBeanDefinitionReader#createReaderContext
+		 *  赋值前this.readerContext是null
+		 */
 		this.readerContext = readerContext;
 		logger.debug("Loading bean definitions");
 		Element root = doc.getDocumentElement();
@@ -328,7 +331,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		 */
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
-			// 自定义实现
+			/**
+			 * 自定义实现,需要从该方法中看出是如何创建出BeanDefinition的
+			 * org.springframework.beans.factory.support.BeanDefinitionReaderUtils#createBeanDefinition
+			 * 
+			 */
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.

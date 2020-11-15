@@ -33,18 +33,31 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
+ * advantage:  n. 优势；利益；有利条件
+ * individual: adj. 个人的；个别的；独特的
+ * phase: n. 月相；时期，阶段 vt. 分阶段进行；使定相
+ * preferred: adj. 优先的；首选的
+ * backs: n. (人体或动物的)背部，背;腰背;脊柱;脊梁骨;后部;后面;末尾 v. (使)后退，倒退;帮助;支持;下赌注于(赛马、参赛队伍等)
+ * typically： adv. 代表性地；作为特色地
+ * essentially： adv. 本质上；本来
+ * multiple： adj. 多重的；多样的；许多的
+ * specific: adj. 特殊的，特定的；明确的；详细的；[药] 具有特效的
+ * 
  * A root bean definition represents the merged bean definition that backs
  * a specific bean in a Spring BeanFactory at runtime. It might have been created
- * from multiple original bean definitions that inherit from each other,
+ * from multiple original bean definitions that inherit(继承) from each other,
  * typically registered as {@link GenericBeanDefinition GenericBeanDefinitions}.
  * A root bean definition is essentially the 'unified' bean definition view at runtime.
+ *====>> RootBeanDefinition代表了一个合并的BeanDefinition(在Spring BeanFactory运行时的一个特别的Bean),他可能是从多个相互继承的原始BeanDefinition创建的。
+ *  通常被注册为 GenericBeanDefinitions,RootBeanDefinition本质上是运行时的“统一”Bean定义视图
+ *
  *
  * <p>Root bean definitions may also be used for registering individual bean definitions
  * in the configuration phase. However, since Spring 2.5, the preferred way to register
- * bean definitions programmatically is the {@link GenericBeanDefinition} class.
+ * bean definitions programmatically(以编程的方式) is the {@link GenericBeanDefinition} class.
  * GenericBeanDefinition has the advantage that it allows to dynamically define
- * parent dependencies, not 'hard-coding' the role as a root bean definition.
- *
+ * parent dependencies, not 'hard-coding(硬编码)' the role as a root bean definition.
+ *  
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @see GenericBeanDefinition

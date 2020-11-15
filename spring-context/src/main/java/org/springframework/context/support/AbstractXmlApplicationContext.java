@@ -81,6 +81,8 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 	 * @see #initBeanDefinitionReader
 	 * @see #loadBeanDefinitions
+	 * 
+	 * @param: beanFactory 初始化容器时新建的BeanFactory
 	 */
 	@Override
 	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
@@ -97,7 +99,7 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 		// Configure the bean definition reader with this context's resource loading environment.
 		beanDefinitionReader.setEnvironment(this.getEnvironment());
 		/**
-		 * 这里的this就是代表容器本身，这里将this设置到beanDefinitionReader中去，作为ReourceLoader，
+		 * 这里的this就是代表容器本身(因为AbstractRefreshableApplicationcontext间接实现了ResourceLoader接口)，这里将this设置到beanDefinitionReader中去，作为ReourceLoader，
 		 * 将DefaultListableBeanFactory实例和容器(例如:FileSystemXmlApplicationContext)串联起来，打通了资源加载和BeanDefinition的注册的通路
 		 * 
 		 * 
@@ -109,6 +111,8 @@ public abstract class AbstractXmlApplicationContext extends AbstractRefreshableC
 		/**
 		 * Allow a subclass to provide custom initialization of the reader,then proceed with actually loading the bean definitions.
 		 * 允许子类提供一个定制化的初始化动作给Reader,然后继续实际加载bean definition
+		 * 
+		 * ====>>> 例如，在子类org.springframework.context.support.AbstractXmlApplicationContext中，就是实现了对XML文件的校验
 		 */
 		initBeanDefinitionReader(beanDefinitionReader);
 		/** 进行Bean Definition的加载，(因为基于FileSystemXmlApplicationContext分析)详见:org.springframework.context.support

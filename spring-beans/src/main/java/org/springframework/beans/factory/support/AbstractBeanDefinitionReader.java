@@ -229,7 +229,12 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
-				// 根据配置文件地址构建Resource
+				/**
+				 * 根据配置文件地址构建Resource
+				 *  Resource只是一个接口，这里会返回不同类型的Resource
+				 *   例如，通过xml文件加载的，那么Resource类型就是FileSystemResource
+				 * 
+				 */
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
 				// 从Resource中加载Bean definition，并返回加载的数量(做减法)
 				int loadCount = loadBeanDefinitions(resources);
