@@ -229,7 +229,11 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 		if (resourceLoader instanceof ResourcePatternResolver) {
 			// Resource pattern matching available.
 			try {
-				// 根据配置文件地址构建Resource
+				/**
+				 * 根据配置文件地址构建Resource
+				 * 具体使用的ResourcePatternResolver的实现类是org.springframework.core.io.support.PathMatchingResourcePatternResolver,注意，这里是根据模式去匹配的
+				 */
+				 
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
 				// 从Resource中加载Bean definition，并返回加载的数量(做减法)
 				int loadCount = loadBeanDefinitions(resources);

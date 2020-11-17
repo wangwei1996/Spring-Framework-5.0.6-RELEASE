@@ -977,6 +977,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/**
 	 * Return a 'merged' BeanDefinition for the given bean name,
 	 * merging a child bean definition with its parent if necessary.
+	 *  
 	 * <p>This {@code getMergedBeanDefinition} considers bean definition
 	 * in ancestors as well.
 	 * @param name the name of the bean to retrieve the merged definition for
@@ -1230,6 +1231,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/**
 	 * Return a RootBeanDefinition for the given bean, by merging with the
 	 * parent if the given bean's definition is a child bean definition.
+	 *   如果给定bean的定义是子bean定义，则通过与父bean合并返回给定bean的RootBeanDefinition。
 	 * @param beanName the name of the bean definition
 	 * @param bd the original bean definition (Root/ChildBeanDefinition)
 	 * @param containingBd the containing bean definition in case of inner bean,
