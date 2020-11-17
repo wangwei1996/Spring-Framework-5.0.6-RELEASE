@@ -234,7 +234,9 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 				 *  Resource只是一个接口，这里会返回不同类型的Resource
 				 *   例如，通过xml文件加载的，那么Resource类型就是FileSystemResource
 				 * 
+				 *  具体使用的ResourcePatternResolver的实现类是org.springframework.core.io.support.PathMatchingResourcePatternResolver,注意，这里是根据模式去匹配的
 				 */
+				 
 				Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
 				// 从Resource中加载Bean definition，并返回加载的数量(做减法)
 				int loadCount = loadBeanDefinitions(resources);

@@ -807,15 +807,22 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
-	 * Instantiate and invoke all registered BeanFactoryPostProcessor beans,
-	 * respecting explicit order if given.
+	 * respecting: v. 尊敬；慎重对待；遵守；避免破坏（或干扰）（respect 的现在分词）
+	 * explicit: adj. 明确的；清楚的；直率的；详述的
+	 * 
+	 * Instantiate and invoke all registered BeanFactoryPostProcessor beans,  respecting explicit order if given.
+	 * 按照给定的顺序来实例化并且调用所有已注册的BeanFactoryPostProcessor Bean
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
-		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
-		// (e.g. through an @Bean method registered by ConfigurationClassPostProcessor)
+		/**
+		 * Detect(察觉，发现，探测) a LoadTimeWeaver and prepare for weaving(编,织), if found in the meantime(其间)
+		 * (e.g. through an @Bean method registered by ConfigurationClassPostProcessor)
+		 * 
+		 * 检测LoadTimeWeaver并准备织入(AOP)
+		 */
 		if (beanFactory.getTempClassLoader() == null && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
 			beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
 			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
