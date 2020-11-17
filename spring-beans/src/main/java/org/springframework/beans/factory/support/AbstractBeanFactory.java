@@ -1233,7 +1233,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * parent if the given bean's definition is a child bean definition.
 	 *   如果给定bean的定义是子bean定义，则通过与父bean合并返回给定bean的RootBeanDefinition。
 	 * @param beanName the name of the bean definition
-	 * @param bd the original bean definition (Root/ChildBeanDefinition)
+	 * @param bd the original bean definition (Root/ChildBeanDefinition)---》默认是GenericBeanDefinition
 	 * @param containingBd the containing bean definition in case of inner bean,
 	 * or {@code null} in case of a top-level bean
 	 * @return a (potentially merged) RootBeanDefinition for the given bean
@@ -1252,6 +1252,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			if (mbd == null) {
+				// 当没有parent属性的时候,即不是子BeanDefinition
 				if (bd.getParentName() == null) {
 					// Use copy of given root bean definition.
 					if (bd instanceof RootBeanDefinition) {
@@ -1262,9 +1263,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					}
 				}
 				else {
-					// Child bean definition: needs to be merged with parent.
+					/**
+					 * Child bean definition: needs to be merged with parent.
+					 * 当有Parent属性,即是子BeanDefinition,需要和parent 进行合并
+					 */
 					BeanDefinition pbd;
 					try {
+						// 回忆一下: FactoryBean 的 &
 						String parentBeanName = transformedBeanName(bd.getParentName());
 						if (!beanName.equals(parentBeanName)) {
 							pbd = getMergedBeanDefinition(parentBeanName);
