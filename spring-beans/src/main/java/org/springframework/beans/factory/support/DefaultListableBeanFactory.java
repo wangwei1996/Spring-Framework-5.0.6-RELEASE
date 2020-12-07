@@ -180,15 +180,28 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	/** List of names of manually registered singletons, in registration order
 	 * 
-	 * 手动注册的单例名称列表，已注册的顺序存在
+	 * 手动注册的单例名称列表，以注册的顺序存在
 	 */
 	private volatile Set<String> manualSingletonNames = new LinkedHashSet<>(16);
 
-	/** Cached array of bean definition names in case of frozen configuration */
+	/** 
+	 * Cached array of bean definition names in case of frozen configuration
+	 * 这个缓存有什么作用，在哪里使用了
+	*/
 	@Nullable
 	private volatile String[] frozenBeanDefinitionNames;
 
-	/** Whether bean definition metadata may be cached for all beans */
+	/** 
+	* Whether bean definition metadata may be cached for all beans 
+	* 是否缓存了所有的Bean Definition元数据
+	* 
+	*  这个值在容器启动的过程中是false,值的更在在容器初始化完成之后。
+	*  org.springframework.beans.factory.support.DefaultListableBeanFactory#freezeConfiguration ： 修改这个值
+	*   由 org.springframework.context.support.AbstractApplicationContext#finishBeanFactoryInitialization 调用
+	*    又由org.springframework.context.support.AbstractApplicationContext#finishBeanFactoryInitialization 调用
+	*      又由org.springframework.context.support.AbstractApplicationContext#refresh调用，这个refresh方法是不是很熟悉
+	* 
+	*/
 	private volatile boolean configurationFrozen = false;
 
 
@@ -342,12 +355,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	//---------------------------------------------------------------------
 	// Implementation of remaining BeanFactory methods
 	//---------------------------------------------------------------------
-
+    /**
+     *  根据Class来获取对应的Bean实例
+	 */
 	@Override
 	public <T> T getBean(Class<T> requiredType) throws BeansException {
 		return getBean(requiredType, (Object[]) null);
 	}
 
+   /**
+     *  根据Class来获取对应的Bean实例
+	 */
 	@Override
 	public <T> T getBean(Class<T> requiredType, @Nullable Object... args) throws BeansException {
 		NamedBeanHolder<T> namedBean = resolveNamedBean(requiredType, args);
@@ -398,8 +416,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		return getBeanNamesForType(type, true, true);
 	}
 
+    /**
+	 *
+	 * @param: type Bean的Class类型
+	 * @param: includeNonSingletons 是否包含非单例的Bean
+	 * @param: allowEagerInit 允许提前初始化
+	 */
 	@Override
 	public String[] getBeanNamesForType(@Nullable Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
+		/**
+		 * isConfigurationFrozen() 返回容器是否正在初始化,true表示初始化完成，false表示正在初始化
+		 */
 		if (!isConfigurationFrozen() || type == null || !allowEagerInit) {
 			return doGetBeanNamesForType(ResolvableType.forRawClass(type), includeNonSingletons, allowEagerInit);
 		}
@@ -415,21 +442,39 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 		return resolvedBeanNames;
 	}
-
+     
+	 /**
+	  *
+	  * 
+      * @param type: Bean的类型,使用ResolvableType包装的
+	  * @param includeNonSingletons 是否包含非单例的Bean
+	  * @param allowEagerInit 是否允许提前初始化
+	  *
+	  */
 	private String[] doGetBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {
 		List<String> result = new ArrayList<>();
 
 		// Check all bean definitions.
 		for (String beanName : this.beanDefinitionNames) {
-			// Only consider bean as eligible if the bean name
-			// is not defined as alias for some other bean.
+			/**
+			 * Only consider(考虑) bean as eligible(符合条件的) if the bean name is not defined as alias for some other bean.
+			 * 只有当Bean名称不是别名的时候才是合法的,即仅考虑Bean的真实名称，不考虑Bean的别名
+			 */
 			if (!isAlias(beanName)) {
 				try {
 					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
-					// Only check bean definition if it is complete.
-					if (!mbd.isAbstract() && (allowEagerInit ||
-							(mbd.hasBeanClass() || !mbd.isLazyInit() || isAllowEagerClassLoading()) &&
-									!requiresEagerInitForType(mbd.getFactoryBeanName()))) {
+					/**
+					* Only check bean definition if it is complete.
+					* mbd.isAbstract(): 判断这个类是否是抽象类
+					* allowEagerInit: 是否允许提前初始化
+					* mbd.hasBeanClass： 是否已经有Bean Class
+					* mbd.islazyInit()： 是否允许延迟初始化
+					* isAllowEagerClassLoading()： 是否允许提前加载
+					* requiresEagerInitForType:  检查特殊的Bean是否需要提前被初始化 这里传入的是工厂方法的名字
+					*/
+					if (!mbd.isAbstract() 
+					      && (allowEagerInit || (mbd.hasBeanClass() || !mbd.isLazyInit() || isAllowEagerClassLoading()) 
+						  && !requiresEagerInitForType(mbd.getFactoryBeanName()))) {
 						// In case of FactoryBean, match object created by FactoryBean.
 						boolean isFactoryBean = isFactoryBean(beanName, mbd);
 						BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
@@ -448,8 +493,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							result.add(beanName);
 						}
 					}
-				}
-				catch (CannotLoadBeanClassException ex) {
+				}catch (CannotLoadBeanClassException ex) {
 					if (allowEagerInit) {
 						throw ex;
 					}
@@ -719,6 +763,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	@Override
 	public void freezeConfiguration() {
 		this.configurationFrozen = true;
+		// 这个缓存作用是什么,在哪里使用了
 		this.frozenBeanDefinitionNames = StringUtils.toStringArray(this.beanDefinitionNames);
 	}
 
@@ -1028,6 +1073,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	// Dependency resolution functionality
 	//---------------------------------------------------------------------
 
+    
 	@Override
 	public <T> NamedBeanHolder<T> resolveNamedBean(Class<T> requiredType) throws BeansException {
 		NamedBeanHolder<T> namedBean = resolveNamedBean(requiredType, (Object[]) null);
@@ -1041,10 +1087,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		throw new NoSuchBeanDefinitionException(requiredType);
 	}
 
+    /**
+	  *  NamedBeanHolder 保存了Bean的实例和name
+	  *  通过Class来从IOC中解析出NamedBeanHolder
+	  */
 	@SuppressWarnings("unchecked")
 	@Nullable
 	private <T> NamedBeanHolder<T> resolveNamedBean(Class<T> requiredType, @Nullable Object... args) throws BeansException {
 		Assert.notNull(requiredType, "Required type must not be null");
+		// 根据Class类型来获取Bean Name
 		String[] candidateNames = getBeanNamesForType(requiredType);
 
 		if (candidateNames.length > 1) {
