@@ -6,6 +6,8 @@
 	<!---->
 	<bean id="welcomeService" class="com.imooc.services.impl.WelcomeServiceImpl"/>
 
-	<bean id="userFactoryBean"  class="com.imooc.entity.user.UserFactoryBean"/>
+	<bean id="userFactoryBean" class="com.imooc.entity.user.UserFactoryBean"/>
+	<!--Bean Name 与 ParentBeanName一致，会去parentBeanFactory获取parentBean，此时会抛出异常-->
+	<!--<bean id="userFactoryBean1"  class="com.imooc.entity.user.UserFactoryBean" parent="userFactoryBean1"/>-->
 
 </beans>
