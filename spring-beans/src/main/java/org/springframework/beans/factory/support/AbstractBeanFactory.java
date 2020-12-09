@@ -1335,31 +1335,48 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						throw new BeanDefinitionStoreException(bd.getResourceDescription(), beanName,
 								"Could not resolve parent bean definition '" + bd.getParentName() + "'", ex);
 					}
-					// Deep copy with overridden values.
+					/**
+					* Deep copy with overridden values. 
+					* 对已经获取到的RootBeanDefinition进行深拷贝
+					*/
 					mbd = new RootBeanDefinition(pbd);
+					// mbd是ParentBeanDefinition,overrideFrom表示子Bean覆盖掉ParentBeanDefinition的属性
 					mbd.overrideFrom(bd);
 				}
 
-				// Set default singleton scope, if not configured before.
+				/**
+				 * Set default singleton scope, if not configured before.
+				 * 当没有配置scope属性，则设置Bean的scope的默认属性值:singleton,即单例模式
+				 */
 				if (!StringUtils.hasLength(mbd.getScope())) {
 					mbd.setScope(RootBeanDefinition.SCOPE_SINGLETON);
 				}
 
-				// A bean contained in a non-singleton bean cannot be a singleton itself.
-				// Let's correct this on the fly here, since this might be the result of
-				// parent-child merging for the outer bean, in which case the original inner bean
-				// definition will not have inherited the merged outer bean's singleton status.
+				/** A bean contained in a non-singleton bean cannot be a singleton itself.
+                 * Let's correct this on the fly here, since this might be the result of
+                 * parent-child merging for the outer bean, in which case the original inner bean
+                 * definition will not have inherited(继承,遗传) the merged outer bean's singleton status.
+				 * 如果一个Bean包含(Inner Bean)一个非单例的Bean,那么他本身就不能是单例的。让我们在这里就成一下这个问题。
+				 * 因为这可能是外部Bean的父子合并的结果，在这种情况下，原始的内部Bean定义将不会继承合并的外部的Bean的单例状态
+                 */
 				if (containingBd != null && !containingBd.isSingleton() && mbd.isSingleton()) {
 					mbd.setScope(containingBd.getScope());
 				}
 
-				// Cache the merged bean definition for the time being
-				// (it might still get re-merged later on in order to pick up metadata changes)
+				/** Cache the merged bean definition for the time being
+				* (it might still get re-merged later on in order to pick up metadata changes)
+				*
+				* isCacheBeanMetadata() 是一个配置值，true表示是否缓存元数据,false表示每次访问时都重新获取
+				* containingBd == null 当不存在Inner Bean的时候并且上述配置打开了才回去构建缓存
+				* 问题: 是否Inner Bean存在时会造成Bean的重新构建?
+				*/
 				if (containingBd == null && isCacheBeanMetadata()) {
+					// 构建缓存
 					this.mergedBeanDefinitions.put(beanName, mbd);
 				}
 			}
 
+           // 返回处理后的RootBeanDefinition
 			return mbd;
 		}
 	}
