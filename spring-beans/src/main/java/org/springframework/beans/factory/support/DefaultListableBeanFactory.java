@@ -1123,7 +1123,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		Assert.notNull(requiredType, "Required type must not be null");
 		// 根据Class类型来获取Bean Name
 		String[] candidateNames = getBeanNamesForType(requiredType);
-        
+
 		/**
 		 * 当class为requiredType的Bean在IOC中有多个，那么过滤一下，获取允许被自动装配的那一个
 		 */
@@ -1143,10 +1143,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
-        /**
-		 * 
+		/**
+		 * 过滤完成之后,如果符合条件的只有一个，那么就使用这个Bean
 		 *
-		*/
+		 */
 		if (candidateNames.length == 1) {
 			String beanName = candidateNames[0];
 			return new NamedBeanHolder<>(beanName, getBean(beanName, requiredType, args));

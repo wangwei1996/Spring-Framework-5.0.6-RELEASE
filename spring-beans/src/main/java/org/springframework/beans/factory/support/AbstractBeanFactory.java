@@ -251,9 +251,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	}
 
 	/**
-	 * Return an instance, which may be shared or independent, of the specified bean.
+	 * Return an instance, which may be shared or independent(独立的,单独的), of the specified(adj. 规定的；详细说明的) bean.
 	 *
-	 * @param name         the name of the bean to retrieve
+	 * @param name         the name of the bean to retrieve(检索；恢复；重新得到)
 	 * @param requiredType the required type of the bean to retrieve
 	 * @param args         arguments to use when creating a bean instance using explicit arguments
 	 *                     (only applied when creating a new instance as opposed to retrieving an existing one)
@@ -282,10 +282,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 							  @Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
+		// 获取准确的Bean 名称
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
-		// Eagerly check singleton cache for manually registered singletons.
+		// Eagerly check singleton cache for manually(adv. 手动地；用手) registered singletons.
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
@@ -1336,9 +1337,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 								"Could not resolve parent bean definition '" + bd.getParentName() + "'", ex);
 					}
 					/**
-					* Deep copy with overridden values. 
-					* 对已经获取到的RootBeanDefinition进行深拷贝
-					*/
+					 * Deep copy with overridden values.
+					 * 对已经获取到的RootBeanDefinition进行深拷贝
+					 */
 					mbd = new RootBeanDefinition(pbd);
 					// mbd是ParentBeanDefinition,overrideFrom表示子Bean覆盖掉ParentBeanDefinition的属性
 					mbd.overrideFrom(bd);
@@ -1353,30 +1354,30 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				/** A bean contained in a non-singleton bean cannot be a singleton itself.
-                 * Let's correct this on the fly here, since this might be the result of
-                 * parent-child merging for the outer bean, in which case the original inner bean
-                 * definition will not have inherited(继承,遗传) the merged outer bean's singleton status.
+				 * Let's correct this on the fly here, since this might be the result of
+				 * parent-child merging for the outer bean, in which case the original inner bean
+				 * definition will not have inherited(继承,遗传) the merged outer bean's singleton status.
 				 * 如果一个Bean包含(Inner Bean)一个非单例的Bean,那么他本身就不能是单例的。让我们在这里就成一下这个问题。
 				 * 因为这可能是外部Bean的父子合并的结果，在这种情况下，原始的内部Bean定义将不会继承合并的外部的Bean的单例状态
-                 */
+				 */
 				if (containingBd != null && !containingBd.isSingleton() && mbd.isSingleton()) {
 					mbd.setScope(containingBd.getScope());
 				}
 
 				/** Cache the merged bean definition for the time being
-				* (it might still get re-merged later on in order to pick up metadata changes)
-				*
-				* isCacheBeanMetadata() 是一个配置值，true表示是否缓存元数据,false表示每次访问时都重新获取
-				* containingBd == null 当不存在Inner Bean的时候并且上述配置打开了才回去构建缓存
-				* 问题: 是否Inner Bean存在时会造成Bean的重新构建?
-				*/
+				 * (it might still get re-merged later on in order to pick up metadata changes)
+				 *
+				 * isCacheBeanMetadata() 是一个配置值，true表示是否缓存元数据,false表示每次访问时都重新获取
+				 * containingBd == null 当不存在Inner Bean的时候并且上述配置打开了才回去构建缓存
+				 * 问题: 是否Inner Bean存在时会造成Bean的重新构建?
+				 */
 				if (containingBd == null && isCacheBeanMetadata()) {
 					// 构建缓存
 					this.mergedBeanDefinitions.put(beanName, mbd);
 				}
 			}
 
-           // 返回处理后的RootBeanDefinition
+			// 返回处理后的RootBeanDefinition
 			return mbd;
 		}
 	}
