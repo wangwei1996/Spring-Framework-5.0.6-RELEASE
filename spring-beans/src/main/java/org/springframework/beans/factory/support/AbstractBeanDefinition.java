@@ -192,6 +192,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean enforceDestroyMethod = true;
 
+    /**
+     * 表明该Bean是否是代码合成的，合成的意思： 这不是一个应用开发人员自己定义的BeanDefinition，而是程序自己组装而成的一个BeanDefinition，例如<aop:config>
+     *
+    */
 	private boolean synthetic = false;
 
 	private int role = BeanDefinition.ROLE_APPLICATION;

@@ -189,6 +189,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * 
 	 * 获取给定名称的已经注册了的单例对象，检查已经实例化的单例对象，并且允许提前引用一个当前创建的单例对象，为了解决循环依赖,如何解决?
 	 * 
+	 * 如果配置的是FactoryBean，这里返回的也是FactoryBean的实例吗?
 	 * @param beanName the name of the bean to look for
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
