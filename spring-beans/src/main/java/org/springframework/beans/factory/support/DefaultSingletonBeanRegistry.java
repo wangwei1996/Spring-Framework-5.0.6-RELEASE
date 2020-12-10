@@ -76,19 +76,31 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/** Logger available to subclasses */
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	/** Cache of singleton objects: bean name --> bean instance */
+	/** 
+	 * Cache of singleton objects: bean name --> bean instance 
+	 * 第一级缓存: 单例对象的缓存, K: Bean Name ; V: bean实例
+	 */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
-	/** Cache of singleton factories: bean name --> ObjectFactory */
+	/**
+	 * Cache of singleton factories: bean name --> ObjectFactory 
+	 * 第三级缓存: 单例对象工厂缓存 
+	*/
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-	/** Cache of early singleton objects: bean name --> bean instance */
+	/** 
+	 * Cache of early singleton objects: bean name --> bean instance 
+	 * 第二级缓存: 提前创建(提前曝光)的单例Bean实例缓存
+	 */
 	private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 
 	/** Set of registered singletons, containing the bean names in registration order */
 	private final Set<String> registeredSingletons = new LinkedHashSet<>(256);
 
-	/** Names of beans that are currently in creation */
+	/** 
+	 * Names of beans that are currently in creation
+	 * 正在创建的Bean的名称 
+	 */
 	private final Set<String> singletonsCurrentlyInCreation =
 			Collections.newSetFromMap(new ConcurrentHashMap<>(16));
 
@@ -172,22 +184,32 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 	/**
 	 * Return the (raw) singleton object registered under the given name.
-	 * <p>Checks already instantiated singletons and also allows for an early
-	 * reference to a currently created singleton (resolving a circular reference).
+	 * <p>Checks already instantiated(实例化) singletons and also allows for an early
+	 * reference to a currently created singleton (resolving a circular reference.
+	 * 
+	 * 获取给定名称的已经注册了的单例对象，检查已经实例化的单例对象，并且允许提前引用一个当前创建的单例对象，为了解决循环依赖,如何解决?
+	 * 
 	 * @param beanName the name of the bean to look for
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+		// Step1:从单例对象的缓存中获取单例对象
 		Object singletonObject = this.singletonObjects.get(beanName);
+		// Step2:如果单例对象还没有创建，并且正在创建中
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
+				// Step3: 从提前创建的单例对象缓存中获取对应名称的单例对象
 				singletonObject = this.earlySingletonObjects.get(beanName);
+				// Step4: 提前创建的单例对象列表缓存中还没有，那么就从第三级缓存中获取
 				if (singletonObject == null && allowEarlyReference) {
+					// Step5: 获取ObjectFactory
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
+						// Step6: 使用ObjectFactory创建单例Bean的实例,具体做了什么操作
 						singletonObject = singletonFactory.getObject();
+						// Step7： 更新缓存(缓存级别提升?)
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						this.singletonFactories.remove(beanName);
 					}
