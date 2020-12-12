@@ -102,45 +102,66 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 	protected Object getObjectFromFactoryBean(FactoryBean<?> factory, String beanName, boolean shouldPostProcess) {
 		/**
 		 * 判断FactoryBean是否是单例的，并且FactoryBean已经创建
-		 * 在这里执行this.singletonObjects.get(beanName) 返回的是FactoryBean，
+		 * <在这里执行this.singletonObjects.get(beanName) 返回的是FactoryBean，>
 		 * 即 this.singletonObjects.get(beanName).equals(factory)为true
 		 *
+		 * 如果工厂模式下需要维护单例,即是单例模式
 		 */
 		if (factory.isSingleton() && containsSingleton(beanName)) {
+			// 加锁
 			synchronized (getSingletonMutex()) {
+				//尝试从缓存中获取，防止多线程下可能有别的线程已完成该单例Bean的创建
 				Object object = this.factoryBeanObjectCache.get(beanName);
+				// 这个单例的Bean还没有被初始化，则说明目前的线程是第一个获取这个Bean实例的线程
 				if (object == null) {
+					// 调用工厂方法，创建Bean实例
 					object = doGetObjectFromFactoryBean(factory, beanName);
 					// Only post-process and store if not put there already during getObject() call above
 					// (e.g. because of circular reference processing triggered by custom getBean calls)
+					/**
+					 * 前面已经加锁了，为什么这里还要校验一下缓存中是否存在Bean呢？
+					 *
+					 * [不是很明白]  是因为FactoryBean是用户自己实现的，因此可能是异步的，即调用getObject方法是异步的，即在Bean还没有创建完成就返回了。
+					 * 如果这里不进行校验，那么就可能另外的线程调用doGetObjectFromFactoryBean方法又创建了一个Bean,这就破坏了单例了
+					 */
 					Object alreadyThere = this.factoryBeanObjectCache.get(beanName);
 					if (alreadyThere != null) {
 						object = alreadyThere;
 					} else {
+						/**
+						 *  shouldPostProcess(org.springframework.beans.factory.support.AbstractBeanDefinition#synthetic为true)参数的值
+						 *  即表示目前的Bean是否是Spring框架生成的内部Bean
+						 *
+						 *  因为Spring框架不允许第三方框架来修改Spring内部的Bean，只允许修改业务上的Bean
+						 */
 						if (shouldPostProcess) {
+							// 如果这个Bean还在创建中(其他线程做的)，那么就不要执行后置处理，也不要缓存这个Bean
 							if (isSingletonCurrentlyInCreation(beanName)) {
 								// Temporarily return non-post-processed object, not storing it yet..
 								return object;
 							}
+							// 后置处理完成前，先加入到缓存中锁定起来，即标记为“创建中”,即:isSingletonCurrentlyInCreation(beanName)返回true
 							beforeSingletonCreation(beanName);
 							try {
-								// Bean创建的后置操作
+								// Bean创建的后置操作,第三方框架可以进行AOP处理
 								object = postProcessObjectFromFactoryBean(object, beanName);
 							} catch (Throwable ex) {
 								throw new BeanCreationException(beanName,
 										"Post-processing of FactoryBean's singleton object failed", ex);
 							} finally {
+								// Bean后置处理完成，从缓存中清理，即isSingletonCurrentlyInCreation(beanName)返回false
 								afterSingletonCreation(beanName);
 							}
 						}
 						if (containsSingleton(beanName)) {
+							// Bean创建完成，证明单例创建完成，构建缓存
 							this.factoryBeanObjectCache.put(beanName, object);
 						}
 					}
 				}
 				return object;
 			}
-		} else {
+		} else {// 如果不是单例模式
 			Object object = doGetObjectFromFactoryBean(factory, beanName);
 			if (shouldPostProcess) {
 				try {

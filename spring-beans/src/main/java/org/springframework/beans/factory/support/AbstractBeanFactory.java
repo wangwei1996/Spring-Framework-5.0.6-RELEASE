@@ -291,6 +291,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		 *
 		 */
 		Object sharedInstance = getSingleton(beanName);
+		/**
+		 * args==null
+		 *
+		 * 因为如果args不为空，那么就需要调用方法给Bean的属性赋值，否则不能直接调用getObjectForBeanInstance方法获取Bean
+		 *
+		 */
 		if (sharedInstance != null && args == null) {
 			if (logger.isDebugEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
@@ -300,10 +306,23 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.debug("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+			/**
+			 * 上面调用getSingleton方法获取到了单例的Bean实例，这里又调用了getObjectForBeanInstance方法获取，
+			 * 主要是因为这里获取到的可能是FactoryBean,如果是FactoryBean，那么就需要调用factory.getObject方法来获取Bean的实例
+			 */
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		} else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
+			/**
+			 *
+			 * 如果scope是prototype，并且显示在创建中，则基本是循环依赖。
+			 * 针对于prototype的循环依赖，Spring无解
+			 *
+			 * A有类型为B成员属性，B又有类型为A的成员属性
+			 * 实例化A的时候，调用doGetBean方法获取B，在获取B的过程中，因为B依赖与A，又调用doGetBean方法获取A
+			 * 那么isPrototypeCurrentlyInCreation(beanName)(通过ThreadLocal实现)就会返回true了
+			 */
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
@@ -908,6 +927,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/**
 	 * Return whether this factory holds a InstantiationAwareBeanPostProcessor
 	 * that will get applied to singleton beans on shutdown.
+	 * <p>
+	 * 返回该工厂是否持有一个实例化awarebeanpostprocessor，该实例化bean将在关闭时应用于单例bean。
 	 *
 	 * @see #addBeanPostProcessor
 	 * @see org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor
