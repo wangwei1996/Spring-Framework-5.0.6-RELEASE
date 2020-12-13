@@ -1109,7 +1109,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * <bean id="student" class=""/>
 	 * <bean id="replacer" class=""/>
 	 * <p>
-	 * 主要是为了处理上述的lookup-method 和 replaced-method
+	 * 主要是为了处理上述的lookup-method 和 replaced-method(在构建BeanDefinition的时候会将这两个属性填充到BeanDefinition的属性methodOverrides上)
 	 *
 	 * @throws BeanDefinitionValidationException in case of validation failure
 	 */
