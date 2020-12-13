@@ -46,6 +46,8 @@ import java.beans.PropertyDescriptor;
  * @see org.springframework.validation.BeanPropertyBindingResult
  * @see org.springframework.validation.DataBinder#initBeanPropertyAccess()
  * @since 13 April 2001
+ * <p>
+ * Spring提供的操作Bean属性的工具
  */
 public interface BeanWrapper extends ConfigurablePropertyAccessor {
 

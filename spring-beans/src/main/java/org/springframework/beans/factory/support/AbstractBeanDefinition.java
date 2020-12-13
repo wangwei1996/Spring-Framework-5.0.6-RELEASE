@@ -1099,6 +1099,18 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * Validate and prepare the method overrides defined for this bean.
 	 * Checks for existence of a method with the specified name.
 	 *
+	 *
+	 * <bean id="myTestBean" class="io.spring.test.MyTestBean">
+	 * <lookup-method name="getUserBean" bean="teacher"/>
+	 * <replaced-method name="changedMethod" replacer="replacer"/>
+	 * </bean>
+	 *
+	 * <bean id="teacher" class=""/>
+	 * <bean id="student" class=""/>
+	 * <bean id="replacer" class=""/>
+	 * <p>
+	 * 主要是为了处理上述的lookup-method 和 replaced-method
+	 *
 	 * @throws BeanDefinitionValidationException in case of validation failure
 	 */
 	public void prepareMethodOverrides() throws BeanDefinitionValidationException {

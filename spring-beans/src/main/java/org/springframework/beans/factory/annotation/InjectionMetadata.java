@@ -49,10 +49,21 @@ public class InjectionMetadata {
 
 	private static final Log logger = LogFactory.getLog(InjectionMetadata.class);
 
+	/**
+	 * 目前Bean的Class对象
+	 */
 	private final Class<?> targetClass;
 
+	/**
+	 * 当post-processor处理Bean的时候，会解析Bean Class 的所有属性，在解析时会判断属性上是否有@value @Autowired注解。
+	 * 有就解析出这个属性值，将解析结果放到这里。
+	 * 保存了被注入元素的全量集合，包括Spring处理的或者外部处理的
+	 */
 	private final Collection<InjectedElement> injectedElements;
 
+	/**
+	 * 和injectedElements类似，只不过这里仅保存了由Spring容器默认进行处理的属性或者方法
+	 */
 	@Nullable
 	private volatile Set<InjectedElement> checkedElements;
 
@@ -115,10 +126,19 @@ public class InjectionMetadata {
 
 	public abstract static class InjectedElement {
 
+		/**
+		 * 被注解标记的成员，Field还是Method
+		 */
 		protected final Member member;
 
+		/**
+		 * 是否为Field被注入
+		 */
 		protected final boolean isField;
 
+		/**
+		 * 属性描述，javaBeans中的接口
+		 */
 		@Nullable
 		protected final PropertyDescriptor pd;
 
@@ -138,11 +158,9 @@ public class InjectionMetadata {
 		protected final Class<?> getResourceType() {
 			if (this.isField) {
 				return ((Field) this.member).getType();
-			}
-			else if (this.pd != null) {
+			} else if (this.pd != null) {
 				return this.pd.getPropertyType();
-			}
-			else {
+			} else {
 				return ((Method) this.member).getParameterTypes()[0];
 			}
 		}
@@ -154,8 +172,7 @@ public class InjectionMetadata {
 					throw new IllegalStateException("Specified field type [" + fieldType +
 							"] is incompatible with resource type [" + resourceType.getName() + "]");
 				}
-			}
-			else {
+			} else {
 				Class<?> paramType =
 						(this.pd != null ? this.pd.getPropertyType() : ((Method) this.member).getParameterTypes()[0]);
 				if (!(resourceType.isAssignableFrom(paramType) || paramType.isAssignableFrom(resourceType))) {
@@ -175,8 +192,7 @@ public class InjectionMetadata {
 				Field field = (Field) this.member;
 				ReflectionUtils.makeAccessible(field);
 				field.set(target, getResourceToInject(target, requestingBeanName));
-			}
-			else {
+			} else {
 				if (checkPropertySkipping(pvs)) {
 					return;
 				}
@@ -184,8 +200,7 @@ public class InjectionMetadata {
 					Method method = (Method) this.member;
 					ReflectionUtils.makeAccessible(method);
 					method.invoke(target, getResourceToInject(target, requestingBeanName));
-				}
-				catch (InvocationTargetException ex) {
+				} catch (InvocationTargetException ex) {
 					throw ex.getTargetException();
 				}
 			}
@@ -215,8 +230,7 @@ public class InjectionMetadata {
 						// Explicit value provided as part of the bean definition.
 						this.skip = true;
 						return true;
-					}
-					else if (pvs instanceof MutablePropertyValues) {
+					} else if (pvs instanceof MutablePropertyValues) {
 						((MutablePropertyValues) pvs).registerProcessedProperty(this.pd.getName());
 					}
 				}

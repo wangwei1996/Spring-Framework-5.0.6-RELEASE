@@ -489,9 +489,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 *  clone the bean definition in case of a dynamically resolved Class
 		 *  which cannot be stored in the shared merged bean definition.
 		 */
-		// 解析出Bean Class(即确保类被加载了)
+		/**
+		 * 解析出Bean Class(即确保类被加载了)
+		 *  因为不同的方式(xml方式或者注解的方式)在生成BeanDefinition的时候，存储的类的信息是不一致的。xml方式存储的是Bean的class的名称，而注解的方式则会创建Class对象
+		 */
 		Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
 
+		/**
+		 * 当解析出来的class(resolvedClass)不为空，并且BeanDefinition没有解析出Class对象，并且有class的名称，则
+		 * 这是xml指定bean的格式。
+		 *
+		 * 如果是这样的情况，那么就会使用深度拷贝，创建一个新的BeanDefinition，
+		 * 这样是因为不希望这个Class对象与缓存中的BeanDefinition进行绑定，因为Class可能是每次都需要动态解析出来
+		 */
 		if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
 			mbdToUse = new RootBeanDefinition(mbd);
 			mbdToUse.setBeanClass(resolvedClass);
@@ -528,6 +538,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			// 创建Bean实例
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Finished creating instance of bean '" + beanName + "'");
@@ -563,14 +574,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final @Nullable Object[] args)
 			throws BeanCreationException {
 
+		// BeanWrapper 是Spring用来操作Bean属性的工具
 		// Instantiate the bean.
 		BeanWrapper instanceWrapper = null;
 		// 判断Bean是否是单例的
 		if (mbd.isSingleton()) {
-			// 从FactoryBean缓存中获取FactoryBean(FactoryName 和 BeanWrapper的映射关系)
+			// 从FactoryBean(未完成的)缓存中获取FactoryBean(FactoryName 和 BeanWrapper的映射关系),因为是单例，所以只能存储一份
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			/**
+			 * 创建Bean实例的时候有三种创建方式:
+			 *   1. 工厂方法创建
+			 *   2. 构造方法的方式注入
+			 *   3. 无参构造方法注入
+			 *  创建一个空的(不会赋值属性)的Bean实例
+			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		final Object bean = instanceWrapper.getWrappedInstance();
@@ -583,6 +602,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					// 被@Autowired @Value标记的属性在这里获取
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				} catch (Throwable ex) {
 					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
@@ -1045,6 +1065,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
+			/**
+			 * 例如重要的: org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+			 *
+			 *
+			 */
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
@@ -1139,6 +1164,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 * 当BeanDefinition调用了org.springframework.beans.factory.support.AbstractBeanDefinition#setInstanceSupplier(java.util.function.Supplier)
 		 * 方法,則首先調用get方法获取Bean的实例
 		 * Demo请参见:com.imooc.supplier.SupplierBean
+		 *
+		 * 即使用工厂方法创建Bean
 		 */
 		if (instanceSupplier != null) {
 			return obtainFromSupplier(instanceSupplier, beanName);
@@ -1157,6 +1184,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		boolean autowireNecessary = false;
 		if (args == null) {
 			synchronized (mbd.constructorArgumentLock) {
+				/**
+				 * 如果已缓存的解析的构造函数或者工厂方法不为空，则可以利用构造函数解析，因为需要根据参数来确认到底使用哪个构造函数
+				 *
+				 */
 				if (mbd.resolvedConstructorOrFactoryMethod != null) {
 					resolved = true;
 					autowireNecessary = mbd.constructorArgumentsResolved;
@@ -1168,7 +1199,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				return autowireConstructor(beanName, mbd, null, null);
 			} else {
 				return instantiateBean(beanName, mbd);
-			} 
+			}
 		}
 
 		// Need to determine the constructor...
@@ -1179,7 +1210,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
-		// No special handling: simply use no-arg constructor.
+		/**
+		 *  No special handling: simply use no-arg constructor.
+		 *  使用无参的构造函数进行创建
+		 */
 		return instantiateBean(beanName, mbd);
 	}
 

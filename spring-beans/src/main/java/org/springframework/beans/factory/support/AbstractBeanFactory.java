@@ -346,6 +346,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 
+			// typeCheckOnly是用来判断调用getBean方法是否仅仅是为了类型检查，而不是为了创建Bean
 			if (!typeCheckOnly) {
 				/**
 				 * 标记一下这个Bean至少创建过一次
@@ -367,6 +368,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
+						/**
+						 * 这里主要是判断如下情况:
+						 *  <bean id = "beanA" class="BeanA" depends-on="beanB"></bean>
+						 *  <bean id = "beanB" class="BeanB" depends-on="beanA"></bean>
+						 *  如果有，则抛出异常。即Spring不支持"显式的循环依赖"
+						 *
+						 */
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
@@ -387,7 +395,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				 * Create bean instance.
 				 * 创建Bean实例
 				 */
-				if (mbd.isSingleton()) {
+				if (mbd.isSingleton()) { // ===》scope为单例
 					// getSingleton 第二个参数是org.springframework.beans.factory.ObjectFactory
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
@@ -401,7 +409,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						}
 					});
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
-				} else if (mbd.isPrototype()) {
+				} else if (mbd.isPrototype()) { // ===》scope为prototype
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
 					try {
@@ -411,7 +419,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						afterPrototypeCreation(beanName);
 					}
 					bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);
-				} else {
+				} else { // ===》其他的类型(request、session、application等)
 					String scopeName = mbd.getScope();
 					final Scope scope = this.scopes.get(scopeName);
 					if (scope == null) {
@@ -440,7 +448,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 		}
 
-		// Check if required type matches the type of the actual bean instance.
+		/**
+		 * Check if required type matches the type of the actual bean instance.
+		 *  对创建出来的Bean进行类型校验
+		 */
 		if (requiredType != null && !requiredType.isInstance(bean)) {
 			try {
 				T convertedBean = getTypeConverter().convertIfNecessary(bean, requiredType);
