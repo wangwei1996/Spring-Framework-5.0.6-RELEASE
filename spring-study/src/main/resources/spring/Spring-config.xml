@@ -4,7 +4,10 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd">
 	<!---->
-	<bean id="welcomeService" class="com.imooc.services.impl.WelcomeServiceImpl" />
+	<bean id="welcomeService" class="com.imooc.services.impl.WelcomeServiceImpl"/>
+	<bean id="welcomeController" class="com.imooc.controller.WelcomeController" autowire="byName">
+
+	</bean>
 
 	<bean id="userFactoryBean" class="com.imooc.entity.user.UserFactoryBean"/>
 	<!--Bean Name 与 ParentBeanName一致，会去parentBeanFactory获取parentBean，此时会抛出异常-->

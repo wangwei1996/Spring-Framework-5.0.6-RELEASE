@@ -589,6 +589,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 *   2. 构造方法的方式注入
 			 *   3. 无参构造方法注入
 			 *  创建一个空的(不会赋值属性)的Bean实例
+			 *
+			 *  需要着重分析一下
 			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
@@ -616,10 +618,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 		/**
-         * Eagerly(急切的;渴望的;) cache singletons to be able to resolve circular references even when triggered by lifecycle interfaces like BeanFactoryAware.
+		 * Eagerly(急切的;渴望的;) cache singletons to be able to resolve circular references even when triggered by lifecycle interfaces like BeanFactoryAware.
 		 * 急切地缓存单例，"以便能够解决循环引用"，即使是被生命周期接口(如BeanFactoryAware)触发。
 		 * this.allowCircularReferences :  是否自动去解决Bean之间的循环依赖
-		 * 
+		 *
 		 */
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
@@ -628,7 +630,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			// 操作第二、三级缓存,即上述的：为了解决循环依赖的问题
+			// 操作第二、三级缓存,即上述的：为了解决循环依赖的问题====>[重要]
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -646,6 +648,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		// 是否允许提前暴露
 		if (earlySingletonExposure) {
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
@@ -1065,8 +1068,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	/**
 	 * Apply MergedBeanDefinitionPostProcessors to the specified bean definition,
 	 * invoking their {@code postProcessMergedBeanDefinition} methods.
-	 * 
-	 *  将MergedBeanDefinitionPostProcessors用于指定的BeanDefinition,调用他们的org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor接口方法
+	 * <p>
+	 * 将MergedBeanDefinitionPostProcessors用于指定的BeanDefinition,调用他们的org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor接口方法
 	 *
 	 * @param mbd      the merged bean definition for the bean
 	 * @param beanType the actual type of the managed bean instance
@@ -1394,10 +1397,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 * 提供InstantiationAwareBeanPostProcessors这个机会给开发者去修改Bean的属性值设置之前的Bean的状态。
 		 * 例如，这个可以用来字段注入的方式.
 		 *
-		*/
+		 */
 		boolean continueWithPropertyPopulation = true;
 
-        /**
+		/**
 		 * 当目前实例化的BeanDefinition不是Spring框架内部的BeanDefinition，并且容器中注册了InstantiationAwareBeanPostProcessors，那么就需要调用相关的接口
 		 * !mbd.isSynthetic 就是不允许框架的使用者修改框架的Bean,仅允许修改业务的Bean
 		 */
@@ -1420,6 +1423,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
+		/**
+		 * 如下情况才会进入if
+		 * <bean id="welcomeController" class="com.imooc.controller.WelcomeController" autowire="byName">
+		 * 即: autowire="byName"
+		 */
 		if (mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_BY_NAME ||
 				mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_BY_TYPE) {
 			// 深度拷贝，创建出一个新的PropertyValues类型对象实例
@@ -1448,8 +1456,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			PropertyDescriptor[] filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 			if (hasInstAwareBpps) {
 				for (BeanPostProcessor bp : getBeanPostProcessors()) {
+					/**
+					 * 1. org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+					 *
+					 */
 					if (bp instanceof InstantiationAwareBeanPostProcessor) {
 						InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+						// 在这里对@Autowired标记的属性进行依赖注入
 						pvs = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvs == null) {
 							return;

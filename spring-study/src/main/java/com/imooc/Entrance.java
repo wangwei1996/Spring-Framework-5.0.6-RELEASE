@@ -1,15 +1,11 @@
 package com.imooc;
 
+import com.imooc.controller.WelcomeController;
 import com.imooc.services.WelcomeService;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-@Configuration
-@ComponentScan("com.com.imooc")
 public class Entrance {
 
 	/**
@@ -21,6 +17,7 @@ public class Entrance {
 
 		ApplicationContext applicationContext = new FileSystemXmlApplicationContext(xmlPath);
 		WelcomeService welcomeService = (WelcomeService) applicationContext.getBean("welcomeService");
+		WelcomeController welcomeController = (WelcomeController) applicationContext.getBean("welcomeController");
 		System.out.println(welcomeService.sayHello("Hello Spring Source Code"));
 
 		String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
@@ -32,24 +29,5 @@ public class Entrance {
 		Object bean2 = applicationContext.getBean(BeanFactory.FACTORY_BEAN_PREFIX + "userFactoryBean");
 		System.out.println(bean.toString());
 		System.out.println(bean2.toString());
-	}
-
-
-	/**
-	 * 通过注解来初始化IOC
-	 */
-	public static void mainAnno(String[] args) {
-
-		ApplicationContext applicationContext = new AnnotationConfigApplicationContext(Entrance.class);
-
-		String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
-		for (String goal : beanDefinitionNames) {
-			System.out.println("--->" + goal);
-		}
-
-		WelcomeService welcomeService = (WelcomeService) applicationContext.getBean("welcomeServiceImpl");
-		welcomeService.sayHello("I am create by annotation");
-
-
 	}
 }
