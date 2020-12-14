@@ -46,3 +46,7 @@ and releases are announced via our [news feed](http://spring.io/blog/category/ne
 
 The Spring Framework is released under version 2.0 of the
 [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+
+## 请注意
+1. 学习框架的思路
+   + 先了解整体代码的各个模块是在做什么事情，然后再结合我们我们想要了解的重点内容去研究相关的细节
