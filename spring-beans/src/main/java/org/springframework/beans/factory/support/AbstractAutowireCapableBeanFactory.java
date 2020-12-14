@@ -598,11 +598,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			mbd.resolvedTargetType = beanType;
 		}
 
-		// Allow post-processors to modify the merged bean definition.
+		/*
+		 * Allow post-processors to modify the merged bean definition.
+		 *
+		 * 对合并后的BeanDefinition进行后置处理
+		 */
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
-					// 被@Autowired @Value标记的属性在这里获取
+					// 被@Autowired @Value标记的属性在这里获取,这里并没有操作Bean实例，操作的是BeanDefinition
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				} catch (Throwable ex) {
 					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
@@ -611,9 +615,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				mbd.postProcessed = true;
 			}
 		}
-
-		// Eagerly cache singletons to be able to resolve circular references
-		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		/**
+         * Eagerly(急切的;渴望的;) cache singletons to be able to resolve circular references even when triggered by lifecycle interfaces like BeanFactoryAware.
+		 * 急切地缓存单例，"以便能够解决循环引用"，即使是被生命周期接口(如BeanFactoryAware)触发。
+		 * this.allowCircularReferences :  是否自动去解决Bean之间的循环依赖
+		 * 
+		 */
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -621,6 +628,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 操作第二、三级缓存,即上述的：为了解决循环依赖的问题
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -1057,6 +1065,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	/**
 	 * Apply MergedBeanDefinitionPostProcessors to the specified bean definition,
 	 * invoking their {@code postProcessMergedBeanDefinition} methods.
+	 * 
+	 *  将MergedBeanDefinitionPostProcessors用于指定的BeanDefinition,调用他们的org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor接口方法
 	 *
 	 * @param mbd      the merged bean definition for the bean
 	 * @param beanType the actual type of the managed bean instance
@@ -1377,15 +1387,25 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
-		// Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
-		// state of the bean before properties are set. This can be used, for example,
-		// to support styles of field injection.
+		/**
+		 * Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
+		 * state of the bean before properties are set. This can be used, for example,
+		 * to support styles of field injection.
+		 * 提供InstantiationAwareBeanPostProcessors这个机会给开发者去修改Bean的属性值设置之前的Bean的状态。
+		 * 例如，这个可以用来字段注入的方式.
+		 *
+		*/
 		boolean continueWithPropertyPopulation = true;
 
+        /**
+		 * 当目前实例化的BeanDefinition不是Spring框架内部的BeanDefinition，并且容器中注册了InstantiationAwareBeanPostProcessors，那么就需要调用相关的接口
+		 * !mbd.isSynthetic 就是不允许框架的使用者修改框架的Bean,仅允许修改业务的Bean
+		 */
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+					// 需要注意这里的返回值，当返回false，则不会继续进行进行属性的解析
 					if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 						continueWithPropertyPopulation = false;
 						break;
@@ -1402,9 +1422,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		if (mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_BY_NAME ||
 				mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_BY_TYPE) {
+			// 深度拷贝，创建出一个新的PropertyValues类型对象实例
 			MutablePropertyValues newPvs = new MutablePropertyValues(pvs);
 
-			// Add property values based on autowire by name if applicable.
+			// Add property values based on autowire by name if applicable(可用的;适用的;合适的).
 			if (mbd.getResolvedAutowireMode() == RootBeanDefinition.AUTOWIRE_BY_NAME) {
 				autowireByName(beanName, mbd, bw, newPvs);
 			}

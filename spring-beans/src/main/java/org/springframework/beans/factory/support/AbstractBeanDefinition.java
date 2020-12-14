@@ -573,14 +573,22 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public int getResolvedAutowireMode() {
 		if (this.autowireMode == AUTOWIRE_AUTODETECT) {
 			// Work out whether to apply setter autowiring or constructor autowiring.
-			// If it has a no-arg constructor it's deemed to be setter autowiring,
+			// If it has a no-arg constructor it's deemed(认为) to be setter autowiring,
 			// otherwise we'll try constructor autowiring.
+			/**
+			 * Work out : 解决，计算出，实现 
+			 * 计算出是使用setter方法来注入还是通过构造方法注入
+			 * 如果拥有无参的构造函数，那么认为是通过setter方法来注入;反之，则尝试使用构造函数注入
+			 * 
+			*/
 			Constructor<?>[] constructors = getBeanClass().getConstructors();
 			for (Constructor<?> constructor : constructors) {
+				// 如果存在无参构造函数，那么就根据类型注入
 				if (constructor.getParameterCount() == 0) {
 					return AUTOWIRE_BY_TYPE;
 				}
 			}
+            // 如果存在有参构造函数,则通过构造函数注入
 			return AUTOWIRE_CONSTRUCTOR;
 		} else {
 			return this.autowireMode;
