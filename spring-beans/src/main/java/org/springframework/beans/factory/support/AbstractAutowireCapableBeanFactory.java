@@ -1422,6 +1422,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return;
 		}
         
+		/**
+         * 在什么情况下pvs不为null?
+		 *
+		 * <bean id="welcomeController" class="imooc.WelcomeController" autowire="byName">
+         *   <property name="welcomeService" ref="welcomeService"/>
+         * </bean>
+		 *
+		 *  当配置有property标签时,pvs不会为空
+		 *
+		 */
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
 		/**
@@ -1447,6 +1457,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			pvs = newPvs;
 		}
 
+        /**
+		 * 是否注册了后置处理器 ，例如如下配置，就是在Spring中注册了一些后置处理器，配合责任链模式，进行Bean的初始化
+		 * <context:annotation-config />：隐式地向 Spring容器注册AutowiredAnnotationBeanPostProcessor(支持@Autowired注解的解析)、 RequiredAnnotationBeanPostProcessor、CommonAnnotationBeanPostProcessor以及 PersistenceAnnotationBeanPostProcessor这4个BeanPostProcessor                              
+		 * <context:component-scan base-package="XX.XX"/> ：除了具有上面的功能之外，还具有自动将带有@component,@service,@Repository等注解的对象注册到spring容器中的功能。
+		 * <mvc:annotation-driven /> 会自动注册DefaultAnnotationHandlerMapping与AnnotationMethodHandlerAdapter 两个bean,是spring MVC为@Controllers分发请求所必须的。并提供了：数据绑定支持，@NumberFormatannotation支持，@DateTimeFormat支持，@Valid支持，读写XML的支持（JAXB），读写JSON的支持（Jackson）。
+		 */
 		boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
 		boolean needsDepCheck = (mbd.getDependencyCheck() != RootBeanDefinition.DEPENDENCY_CHECK_NONE);
 
@@ -1495,6 +1511,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected void autowireByName(
 			String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {
 
+        
 		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
 		for (String propertyName : propertyNames) {
 			if (containsBean(propertyName)) {
@@ -1571,6 +1588,40 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * These are probably unsatisfied references to other beans in the
 	 * factory. Does not include simple properties like primitives or Strings.
 	 *
+	 * 获取非简单类型属性的名称，且该属性没有被配置到配置文件中。
+	 * <bean id="welcomeController" class="imooc.WelcomeController" autowire="byName">
+     *   <property name="welcomeService" ref="welcomeService"/>
+     * </bean>
+	 *Spring认为的简单类型属性有：
+	 * 1. CharSequence接口的实现类，例如String
+	 * 2. Enum
+	 * 3. Date
+	 * 4. URI/URL
+	 * 5. Number的继承类，如Integer
+	 * 6. byte、short、int等基本类型
+	 * 7. Locale
+	 * 9. 以上所有类型的数组形式
+	 *
+	 * 请注意：
+	 * 这里返回的非简单属性，是在Class文件中有对应的setter方法,如下，会在bw.getPropertyDescriptors()方法中返回
+	 *   
+     * public class WelcomeController {
+     * 
+	 * // 这里welcomeService属性有对应的setter方法，故bw.getPropertyDescriptors()会返回welcomeService属性
+     * public void setWelcomeService(WelcomeService welcomeService) {
+     *    this.welcomeService = welcomeService;
+     * }
+     * 
+    *@Autowired
+    *private WelcomeService welcomeService;
+
+    * @Override
+    * public String toString() {
+    *     return "WelcomeController{" +
+    *             "welcomeService=" + welcomeService +
+    *             '}';
+    * }
+    * }
 	 * @param mbd the merged bean definition the bean was created with
 	 * @param bw  the BeanWrapper the bean was created with
 	 * @return an array of bean property names
@@ -1579,8 +1630,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected String[] unsatisfiedNonSimpleProperties(AbstractBeanDefinition mbd, BeanWrapper bw) {
 		Set<String> result = new TreeSet<>();
 		PropertyValues pvs = mbd.getPropertyValues();
+		
 		PropertyDescriptor[] pds = bw.getPropertyDescriptors();
 		for (PropertyDescriptor pd : pds) {
+			/**
+			 *  !pvs.contains(pd.getName()) 即不允许包含在配置文件中，因为如果配置在文件中，那么解析为BeanDefinition的时候就会出现在pvs(mbd.getPropertyValues())中
+			 *
+			*/
 			if (pd.getWriteMethod() != null && !isExcludedFromDependencyCheck(pd) && !pvs.contains(pd.getName()) &&
 					!BeanUtils.isSimpleProperty(pd.getPropertyType())) {
 				result.add(pd.getName());
