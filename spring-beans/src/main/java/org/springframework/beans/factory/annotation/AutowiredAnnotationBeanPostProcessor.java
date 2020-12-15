@@ -364,6 +364,16 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		return (candidateConstructors.length > 0 ? candidateConstructors : null);
 	}
 
+
+	/**
+ 	* Bean属性值的后置处理
+ 	* 
+	* @param pvs: 即xm文件中使用<property/>标签进行注入的属性
+	* @param pds: setter方法设置的属性
+	* @param bean: BeanWrapper包装的未创建完备的Bean实例
+	* @param beanName 
+    * 
+    */
 	@Override
 	public PropertyValues postProcessPropertyValues(
 			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeanCreationException {
@@ -422,14 +432,26 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		}
 		return metadata;
 	}
-
+    
+	/**
+	* 解析Bean的Class文件,构建注入元数据
+	*
+	* 除了Class本身，还有父类，父类的父类。。。。。
+	* ====>》   while (targetClass != null && targetClass != Object.class);
+	* 
+	*/
 	private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
 		LinkedList<InjectionMetadata.InjectedElement> elements = new LinkedList<>();
 		Class<?> targetClass = clazz;
 
 		do {
 			final LinkedList<InjectionMetadata.InjectedElement> currElements = new LinkedList<>();
-
+ 
+		   /**
+		    * 解析属性是否被@Autowired和@value注解标注
+			* 
+			* 为什么说是这两个注解,详见AutowiredAnnotationBeanPostProcessor的构造函数
+			*/
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				AnnotationAttributes ann = findAutowiredAnnotation(field);
 				if (ann != null) {
@@ -444,6 +466,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				}
 			});
 
+            /**
+			 * 解析方法是否被@Autowired @Value注解标注
+			 *
+			 */
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
@@ -471,7 +497,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 			elements.addAll(0, currElements);
 			targetClass = targetClass.getSuperclass();
-		}
+		} // 这里会遍历本身的属性以及方法，并且也会遍历父类，父类的父类....等的属性和方法
 		while (targetClass != null && targetClass != Object.class);
 
 		return new InjectionMetadata(clazz, elements);
