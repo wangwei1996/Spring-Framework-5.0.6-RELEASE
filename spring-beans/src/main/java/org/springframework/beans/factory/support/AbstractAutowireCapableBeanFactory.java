@@ -1417,10 +1417,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+        // 是否需要继续进行字段注入
 		if (!continueWithPropertyPopulation) {
 			return;
 		}
-
+        
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
 		/**
@@ -1484,6 +1485,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * Fill in any missing property values with references to
 	 * other beans in this factory if autowire is set to "byName".
 	 *
+	 * 如果autowire的值是byName,即根据名称去注入Bean，那么就给这个Bean填充上缺失的属性
 	 * @param beanName the name of the bean we're wiring up.
 	 *                 Useful for debugging messages; not used functionally.
 	 * @param mbd      bean definition to update through autowiring
