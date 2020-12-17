@@ -560,6 +560,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	/**
 	 * Resolve the specified cached method argument or field value.
+	 *
+	 * @param beanName
+	 * @param cachedArgument
+	 * @return
 	 */
 	@Nullable
 	private Object resolvedCachedArgument(@Nullable String beanName, @Nullable Object cachedArgument) {
@@ -590,6 +594,12 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			this.required = required;
 		}
 
+		/**
+		 * @param bean
+		 * @param beanName
+		 * @param pvs
+		 * @throws Throwable
+		 */
 		@Override
 		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			Field field = (Field) this.member;
@@ -597,12 +607,16 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			if (this.cached) {
 				value = resolvedCachedArgument(beanName, this.cachedFieldValue);
 			} else {
+				// 构造新的依赖描述符
 				DependencyDescriptor desc = new DependencyDescriptor(field, this.required);
+				// 设置描述符的被服务者
 				desc.setContainingClass(bean.getClass());
 				Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
 				Assert.state(beanFactory != null, "No BeanFactory available");
+				// 获取类型转换器(默认: org.springframework.beans.SimpleTypeConverter)
 				TypeConverter typeConverter = beanFactory.getTypeConverter();
 				try {
+					// 解析依赖，返回需要注入的对象(属性的值)
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 				} catch (BeansException ex) {
 					throw new UnsatisfiedDependencyException(null, beanName, new InjectionPoint(field), ex);

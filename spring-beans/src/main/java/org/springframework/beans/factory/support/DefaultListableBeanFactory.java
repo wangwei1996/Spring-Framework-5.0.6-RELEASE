@@ -1184,11 +1184,21 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		return null;
 	}
 
+	/**
+	 * @param descriptor         the descriptor for the dependency (field/method/constructor)
+	 * @param requestingBeanName the name of the bean which declares the given dependency
+	 * @param autowiredBeanNames a Set that all names of autowired beans (used for
+	 *                           resolving the given dependency) are supposed to be added to （传出参数）
+	 * @param typeConverter      the TypeConverter to use for populating arrays and collections
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	@Nullable
 	public Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName,
 									@Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) throws BeansException {
 
+		// 一个赋值操作
 		descriptor.initParameterNameDiscovery(getParameterNameDiscoverer());
 		if (Optional.class == descriptor.getDependencyType()) {
 			return createOptionalDependency(descriptor, requestingBeanName);
@@ -1198,19 +1208,32 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		} else if (javaxInjectProviderClass == descriptor.getDependencyType()) {
 			return new Jsr330ProviderFactory().createDependencyProvider(descriptor, requestingBeanName);
 		} else {
+			// 注意一下这行代码，这里是否会创建代理对象呢
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
+				// 解析依赖描述符，将依赖描述符转换为需要输入的Bean
 				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
 			}
 			return result;
 		}
 	}
 
+	/**
+	 * 解析依赖描述符，返回需要注入的对象
+	 *
+	 * @param descriptor         属性描述符
+	 * @param beanName           目前正在被解析的Bean(即目前解析的descriptor是bean的一个属性)
+	 * @param autowiredBeanNames 属性描述符对应的候选人列表(一个传出参数)
+	 * @param typeConverter      类型转换器
+	 * @return
+	 * @throws BeansException
+	 */
 	@Nullable
 	public Object doResolveDependency(DependencyDescriptor descriptor, @Nullable String beanName,
 									  @Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) throws BeansException {
 
+		// 设置一下当前线程正在处理的注入点(因为在解析依赖描述符的时候，还是会创建Bean的，也是就是说还是依旧会解析其他的依赖描述符(getBean方法递归调用的时候))
 		InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
 		try {
 			Object shortcut = descriptor.resolveShortcut(this);
@@ -1272,6 +1295,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				autowiredBeanNames.add(autowiredBeanName);
 			}
 			if (instanceCandidate instanceof Class) {
+				/**
+				 * 解析候选者,从BeanFactory中获取符合条件的Bean，通过查询源代码，
+				 * 还是调用方法org.springframework.beans.factory.BeanFactory.getBean(java.lang.String)来获取Bean
+				 */
 				instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
 			}
 			Object result = instanceCandidate;
