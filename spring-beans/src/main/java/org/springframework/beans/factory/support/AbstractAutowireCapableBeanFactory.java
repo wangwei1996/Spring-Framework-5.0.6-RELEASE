@@ -138,7 +138,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 	/**
 	 * Whether to resort to injecting a raw bean instance in case of circular reference,
-	 * even if the injected bean eventually got wrapped.
+	 * even if the injected bean eventually(最后，终于) got wrapped.
+	 * <p>
+	 * 在循环依赖的情况下，是否注入原始的Bean实例，尽管获取到了包装了的Bean
+	 * <p>
+	 * resort： n. 凭借，手段；度假胜地；常去之地 vi. 求助，诉诸；常去；采取某手段或方法
 	 */
 	private boolean allowRawInjectionDespiteWrapping = false;
 
@@ -427,6 +431,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		return initializeBean(beanName, existingBean, null);
 	}
 
+	/**
+	 * 给正在创建的Bean实例进行后置处理-前置操作
+	 *
+	 * @param existingBean the new bean instance
+	 * @param beanName     the name of the bean
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName)
 			throws BeansException {
@@ -637,7 +649,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			// 填充Bean的属性
 			populateBean(beanName, mbd, instanceWrapper);
+			// 主要是对Bean进行后置处理操作(Aware接口、后置处理器等)
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		} catch (Throwable ex) {
 			if (ex instanceof BeanCreationException && beanName.equals(((BeanCreationException) ex).getBeanName())) {
@@ -650,18 +664,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// 是否允许提前暴露
 		if (earlySingletonExposure) {
+			// 并发获取的情况下也需要保证单例
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
-				if (exposedObject == bean) {
+				if (exposedObject == bean) { // 如果即将被暴露的Bean和原始Bean是一样的(即没有被包装，没有被代理)
 					exposedObject = earlySingletonReference;
-				} else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
+				} else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) { // 当BeanFactory不允许注入原始Bean，并且目前的Bean被其他的Bean作为属性注入了(在创建完备之前)
+					// 获取依赖beanName的Bean
 					String[] dependentBeans = getDependentBeans(beanName);
 					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
+					// 计算真正依赖beanName的Bean
 					for (String dependentBean : dependentBeans) {
 						if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) {
 							actualDependentBeans.add(dependentBean);
 						}
 					}
+					// 当确实有Bean依赖了beanName,则抛出异常
 					if (!actualDependentBeans.isEmpty()) {
 						throw new BeanCurrentlyInCreationException(beanName,
 								"Bean with name '" + beanName + "' has been injected into other beans [" +
@@ -675,8 +693,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
-		// Register bean as disposable.
+		/**
+		 * Register bean as disposable.
+		 * disposable: adj. 可任意处理的；可自由使用的；用完即可丢弃的
+		 */
 		try {
+			// 注册与Bean销毁相关的回调方法
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		} catch (BeanDefinitionValidationException ex) {
 			throw new BeanCreationException(
@@ -1417,17 +1439,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
-        // 是否需要继续进行字段注入
+		// 是否需要继续进行字段注入
 		if (!continueWithPropertyPopulation) {
 			return;
 		}
-        
+
 		/**
-         * 在什么情况下pvs不为null?
+		 * 在什么情况下pvs不为null?
 		 *
 		 * <bean id="welcomeController" class="imooc.WelcomeController" autowire="byName">
-         *   <property name="welcomeService" ref="welcomeService"/>
-         * </bean>
+		 *   <property name="welcomeService" ref="welcomeService"/>
+		 * </bean>
 		 *
 		 *  当配置有property标签时,pvs不会为空
 		 *
@@ -1457,7 +1479,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			pvs = newPvs;
 		}
 
-        /**
+		/**
 		 * 是否注册了后置处理器 ，例如如下配置，就是在Spring中注册了一些后置处理器，配合责任链模式，进行Bean的初始化
 		 * <context:annotation-config />：隐式地向 Spring容器注册AutowiredAnnotationBeanPostProcessor(支持@Autowired注解的解析)、 RequiredAnnotationBeanPostProcessor、CommonAnnotationBeanPostProcessor以及 PersistenceAnnotationBeanPostProcessor这4个BeanPostProcessor                              
 		 * <context:component-scan base-package="XX.XX"/> ：除了具有上面的功能之外，还具有自动将带有@component,@service,@Repository等注解的对象注册到spring容器中的功能。
@@ -1503,8 +1525,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	/**
 	 * Fill in any missing property values with references to
 	 * other beans in this factory if autowire is set to "byName".
-	 *
+	 * <p>
 	 * 如果autowire的值是byName,即根据名称去注入Bean，那么就给这个Bean填充上缺失的属性
+	 *
 	 * @param beanName the name of the bean we're wiring up.
 	 *                 Useful for debugging messages; not used functionally.
 	 * @param mbd      bean definition to update through autowiring
@@ -1514,7 +1537,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected void autowireByName(
 			String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {
 
-        
+
 		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
 		for (String propertyName : propertyNames) {
 			if (containsBean(propertyName)) {
@@ -1590,12 +1613,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * Return an array of non-simple bean properties that are unsatisfied.
 	 * These are probably unsatisfied references to other beans in the
 	 * factory. Does not include simple properties like primitives or Strings.
-	 *
+	 * <p>
 	 * 获取非简单类型属性的名称，且该属性没有被配置到配置文件中。
 	 * <bean id="welcomeController" class="imooc.WelcomeController" autowire="byName">
-     *   <property name="welcomeService" ref="welcomeService"/>
-     * </bean>
-	 *Spring认为的简单类型属性有：
+	 * <property name="welcomeService" ref="welcomeService"/>
+	 * </bean>
+	 * Spring认为的简单类型属性有：
 	 * 1. CharSequence接口的实现类，例如String
 	 * 2. Enum
 	 * 3. Date
@@ -1604,42 +1627,39 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * 6. byte、short、int等基本类型
 	 * 7. Locale
 	 * 9. 以上所有类型的数组形式
-	 *
+	 * <p>
 	 * 请注意：
 	 * 这里返回的非简单属性，是在Class文件中有对应的setter方法,如下，会在bw.getPropertyDescriptors()方法中返回
-	 *   
-     * public class WelcomeController {
-     * 
+	 * <p>
+	 * public class WelcomeController {
+	 * <p>
 	 * // 这里welcomeService属性有对应的setter方法，故bw.getPropertyDescriptors()会返回welcomeService属性
-     * public void setWelcomeService(WelcomeService welcomeService) {
-     *    this.welcomeService = welcomeService;
-     * }
-     * 
-    *@Autowired
-    *private WelcomeService welcomeService;
-
-    * @Override
-    * public String toString() {
-    *     return "WelcomeController{" +
-    *             "welcomeService=" + welcomeService +
-    *             '}';
-    * }
-    * }
+	 * public void setWelcomeService(WelcomeService welcomeService) {
+	 * this.welcomeService = welcomeService;
+	 * }
+	 *
 	 * @param mbd the merged bean definition the bean was created with
 	 * @param bw  the BeanWrapper the bean was created with
 	 * @return an array of bean property names
+	 * @Autowired private WelcomeService welcomeService;
+	 * @Override public String toString() {
+	 * return "WelcomeController{" +
+	 * "welcomeService=" + welcomeService +
+	 * '}';
+	 * }
+	 * }
 	 * @see org.springframework.beans.BeanUtils#isSimpleProperty
 	 */
 	protected String[] unsatisfiedNonSimpleProperties(AbstractBeanDefinition mbd, BeanWrapper bw) {
 		Set<String> result = new TreeSet<>();
 		PropertyValues pvs = mbd.getPropertyValues();
-		
+
 		PropertyDescriptor[] pds = bw.getPropertyDescriptors();
 		for (PropertyDescriptor pd : pds) {
 			/**
 			 *  !pvs.contains(pd.getName()) 即不允许包含在配置文件中，因为如果配置在文件中，那么解析为BeanDefinition的时候就会出现在pvs(mbd.getPropertyValues())中
 			 *
-			*/
+			 */
 			if (pd.getWriteMethod() != null && !isExcludedFromDependencyCheck(pd) && !pvs.contains(pd.getName()) &&
 					!BeanUtils.isSimpleProperty(pd.getPropertyType())) {
 				result.add(pd.getName());
@@ -1846,6 +1866,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	/**
 	 * Initialize the given bean instance, applying factory callbacks
 	 * as well as init methods and bean post processors.
+	 * <p>
+	 * 初始化给定的bean实例，应用工厂回调以及init方法和bean post处理器。
 	 * <p>Called from {@link #createBean} for traditionally defined beans,
 	 * and from {@link #initializeBean} for existing bean instances.
 	 *
@@ -1862,6 +1884,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #applyBeanPostProcessorsAfterInitialization
 	 */
 	protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
+		// Aware接口,让Bean实例感知一下
 		if (System.getSecurityManager() != null) {
 			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
 				invokeAwareMethods(beanName, bean);
@@ -1872,24 +1895,33 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		Object wrappedBean = bean;
+		// 做一些后置处理(before方法)(BeanDefinition是业务上的，非Spring内部的),此时也会处理一些Aware的动作,这取决于后置处理器
 		if (mbd == null || !mbd.isSynthetic()) {
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
+			// 针对于org.springframework.beans.factory.InitializingBean接口进行处理以及init-method方法进行处理
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		} catch (Throwable ex) {
 			throw new BeanCreationException(
 					(mbd != null ? mbd.getResourceDescription() : null),
 					beanName, "Invocation of init method failed", ex);
 		}
+		// 做一些后置处理(before方法)(BeanDefinition是业务上的，非Spring内部的)
 		if (mbd == null || !mbd.isSynthetic()) {
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
-
+		// 返回包装好的Bean
 		return wrappedBean;
 	}
 
+	/**
+	 * Aware接口(参见:org.springframework.beans.factory.Aware),在Bean实例化的时候会回调相对应的方法
+	 *
+	 * @param beanName Bean名称
+	 * @param bean     正在实例化的Bean的实例
+	 */
 	private void invokeAwareMethods(final String beanName, final Object bean) {
 		if (bean instanceof Aware) {
 			if (bean instanceof BeanNameAware) {
@@ -1912,6 +1944,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * and a chance to know about its owning bean factory (this object).
 	 * This means checking whether the bean implements InitializingBean or defines
 	 * a custom init method, and invoking the necessary callback(s) if it does.
+	 * <p>
+	 * 现在它的所有属性都设置好了，给bean一个机会做出反应，让它有机会了解它拥有的bean工厂(此对象)。
+	 * 这意味着检查bean是否实现了InitializingBean或定义了一个自定义的init方法，如果这样做了，就调用必要的回调。
 	 *
 	 * @param beanName the bean name in the factory (for debugging purposes)
 	 * @param bean     the new bean instance we may need to initialize
@@ -1919,6 +1954,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 *                 (can also be {@code null}, if given an existing bean instance)
 	 * @throws Throwable if thrown by init methods or by the invocation process
 	 * @see #invokeCustomInitMethod
+	 * <p>
+	 * 针对于实现了InitializingBean接口或者init-method的Bean进行处理
 	 */
 	protected void invokeInitMethods(String beanName, final Object bean, @Nullable RootBeanDefinition mbd)
 			throws Throwable {
@@ -1928,6 +1965,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (logger.isDebugEnabled()) {
 				logger.debug("Invoking afterPropertiesSet() on bean with name '" + beanName + "'");
 			}
+			// 调用实现了org.springframework.beans.factory.InitializingBean接口的Bean实例的afterPropertiesSet方法来设置属性
 			if (System.getSecurityManager() != null) {
 				try {
 					AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
@@ -1941,7 +1979,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				((InitializingBean) bean).afterPropertiesSet();
 			}
 		}
-
+		// 针对于init-method
 		if (mbd != null && bean.getClass() != NullBean.class) {
 			String initMethodName = mbd.getInitMethodName();
 			if (StringUtils.hasLength(initMethodName) &&

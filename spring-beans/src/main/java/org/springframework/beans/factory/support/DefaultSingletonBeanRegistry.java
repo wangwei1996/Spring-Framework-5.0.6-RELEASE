@@ -145,11 +145,13 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 	/**
 	 * Map between dependent bean names: bean name --> Set of dependent bean names
+	 * bean name 被Set<String> 这些Bean依赖了
 	 */
 	private final Map<String, Set<String>> dependentBeanMap = new ConcurrentHashMap<>(64);
 
 	/**
 	 * Map between depending bean names: bean name --> Set of bean names for the bean's dependencies
+	 * String 依赖Set<String>这些Bean
 	 */
 	private final Map<String, Set<String>> dependenciesForBeanMap = new ConcurrentHashMap<>(64);
 

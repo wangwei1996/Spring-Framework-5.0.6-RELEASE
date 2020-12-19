@@ -582,10 +582,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	 */
 	private class AutowiredFieldElement extends InjectionMetadata.InjectedElement {
 
+		// 是否必需
 		private final boolean required;
 
+		// 是否已经缓存该Field的值
 		private volatile boolean cached = false;
 
+		/**
+		 * 属性描述符的缓存
+		 */
 		@Nullable
 		private volatile Object cachedFieldValue;
 
@@ -621,13 +626,18 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				} catch (BeansException ex) {
 					throw new UnsatisfiedDependencyException(null, beanName, new InjectionPoint(field), ex);
 				}
+
 				synchronized (this) {
+					// 解析依赖完成，判断是否有缓存(描述依赖符的缓存)，如果没有，则构建缓存
 					if (!this.cached) {
+						// 当解析出来的依赖不为空或者是属性必需
 						if (value != null || this.required) {
 							this.cachedFieldValue = desc;
+							// 注册依赖关系
 							registerDependentBeans(beanName, autowiredBeanNames);
 							if (autowiredBeanNames.size() == 1) {
 								String autowiredBeanName = autowiredBeanNames.iterator().next();
+								// 如果将依赖描述符解析出了依赖，则构建快捷依赖描述符，并构建缓存
 								if (beanFactory.containsBean(autowiredBeanName) &&
 										beanFactory.isTypeMatch(autowiredBeanName, field.getType())) {
 									this.cachedFieldValue = new ShortcutDependencyDescriptor(
@@ -643,6 +653,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (value != null) {
 				ReflectionUtils.makeAccessible(field);
+				// 给属性赋值,至此，属性注入成功
 				field.set(bean, value);
 			}
 		}
@@ -751,12 +762,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	/**
 	 * DependencyDescriptor variant with a pre-resolved target bean name.
+	 * 拥有提前解析的目标Bean名称的依赖描述符变体
 	 */
 	@SuppressWarnings("serial")
 	private static class ShortcutDependencyDescriptor extends DependencyDescriptor {
 
+		// 依赖描述符对应的Bean名称(即由依赖描述符解析出来的)
 		private final String shortcut;
 
+		// 依赖描述符描述的属性的类型
 		private final Class<?> requiredType;
 
 		public ShortcutDependencyDescriptor(DependencyDescriptor original, String shortcut, Class<?> requiredType) {

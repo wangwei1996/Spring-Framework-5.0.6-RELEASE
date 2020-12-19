@@ -33,6 +33,12 @@ package org.springframework.beans.factory;
  *
  * @author Chris Beams
  * @since 3.1
+ * <p>
+ * 标记超接口，指示bean有资格通过回调样式的方法从Spring容器得到特定框架对象的通知。
+ * 实际的方法签名是由各个子接口决定的，但通常应该只包含一个接受单个参数的返回空洞的方法。
+ * <p>
+ * 即如果实现了相对应的子接口，如BeanNameAware接口，则就会在Bean实例创建的时候将Bean名称通过回调方法回传给接口的实现者
+ * 这是一个感知的接口，让Bean能够通过实现某些接口来感知Spring IOC创建的一些过程
  */
 public interface Aware {
 
