@@ -89,7 +89,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/**
 	 * Cache of singleton factories: bean name --> ObjectFactory
 	 * 第三级缓存: 单例对象工厂缓存
-	 * 用于保存BeanName和创建Bean的工厂之间的关系，单例Bean在创建之初过早的宝轮出去的Factory，为什么采用工厂方式：
+	 * 用于保存BeanName和创建Bean的工厂之间的关系，单例Bean在创建之初过早的暴露出去的Factory，为什么采用工厂方式：
 	 * 是因为有些Bean是需要被代理的，不能将代理前的暴露出去
 	 */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
@@ -199,7 +199,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
 			if (!this.singletonObjects.containsKey(beanName)) {
+				// 构建第三级缓存
 				this.singletonFactories.put(beanName, singletonFactory);
+				// 清空二级缓存
 				this.earlySingletonObjects.remove(beanName);
 				this.registeredSingletons.add(beanName);
 			}

@@ -642,7 +642,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			// 操作第二、三级缓存,即上述的：为了解决循环依赖的问题====>[重要]
+			/**
+			 * 操作第二、三级缓存,即上述的：为了解决循环依赖的问题====>[重要]
+			 * 到这里Bean的实例已经创建成功了，只是需要填充属性(注入依赖)
+			 *
+			 * 这里是构建了三级缓存,例如，这里构建了三级缓存中的第三级缓存
+			 */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 

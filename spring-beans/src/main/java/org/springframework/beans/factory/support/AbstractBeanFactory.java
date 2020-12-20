@@ -288,7 +288,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		/**
 		 * Eagerly check singleton cache for manually(adv. 手动地；用手) registered singletons.
-		 *
+		 * 这里会尝试从缓存中获取
 		 */
 		Object sharedInstance = getSingleton(beanName);
 		/**
@@ -408,6 +408,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
+					// 因为获取到的可能是Bean实例，也可能是BeanFactory
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				} else if (mbd.isPrototype()) { // ===》scope为prototype
 					// It's a prototype -> create a new instance.
@@ -1748,7 +1749,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		/**
 		 * Don't let calling code try to dereference the factory if the bean isn't a factory.
-		 * 如果这个Bean是Factory,那么不要让调用者取消对这个Factory的引用
+		 * 如果这个Bean是FactoryBean,那么不要让调用者取消对这个Factory的引用
 		 *
 		 *
 		 * org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String) 如果调用该方法传入的是&xxx,那么就一定返回的是FactoryBean?
