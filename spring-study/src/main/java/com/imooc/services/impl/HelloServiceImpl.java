@@ -1,7 +1,9 @@
 package com.imooc.services.impl;
 
 import com.imooc.services.HelloService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class HelloServiceImpl implements HelloService {
 	@Override
 	public void sayHello() {

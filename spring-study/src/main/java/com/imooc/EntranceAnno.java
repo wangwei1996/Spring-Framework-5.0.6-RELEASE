@@ -1,5 +1,7 @@
 package com.imooc;
 
+import com.imooc.controller.HelloController;
+import com.imooc.controller.HiController;
 import com.imooc.controller.WelcomeController;
 import com.imooc.services.WelcomeService;
 import org.springframework.context.ApplicationContext;
@@ -26,7 +28,14 @@ public class EntranceAnno {
 		WelcomeService welcomeService = (WelcomeService) applicationContext.getBean("welcomeServiceImpl");
 		WelcomeController welcomeController = applicationContext.getBean(WelcomeController.class);
 
-		welcomeService.sayHello("I am create by annotation");
+		//welcomeService.sayHello("I am create by annotation");
+
+
+		HiController hiController = (HiController) applicationContext.getBean("hiController");
+		hiController.handleRequest();
+
+		HelloController helloController = (HelloController) applicationContext.getBean("helloController");
+		helloController.handleRequest();
 
 	}
 }
