@@ -5,6 +5,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.stereotype.Component;
 
+/**
+ *
+ * 各个Advice的执行流程参见: Spring-Note/015.AOP引入.md
+ *
+ */
 @Aspect
 @Component
 public class AspectStu {
@@ -50,8 +55,8 @@ public class AspectStu {
 		try {
 			returnVal = ((ProceedingJoinPoint) joinPoint).proceed();
 		} catch (Throwable throwable) {
-			System.out.println("((ProceedingJoinPoint) joinPoint).proceed()  出现异常");
-			throw throwable;
+			System.out.println("======> ((ProceedingJoinPoint) joinPoint).proceed()  出现异常");
+			//throw throwable;
 		}
 		System.out.println("execution(* com.imooc.services..*.*(..)) --->aroundAdvice--->proceed方法执行之后");
 		return returnVal;
