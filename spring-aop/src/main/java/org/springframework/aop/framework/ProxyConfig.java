@@ -23,6 +23,8 @@ import org.springframework.util.Assert;
 /**
  * Convenience superclass for configuration used in creating proxies,
  * to ensure that all proxy creators have consistent properties.
+ * <p>
+ * 用于创建代理的配置的父类，以确保所有代理创建者具有一致的属性
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
@@ -30,18 +32,36 @@ import org.springframework.util.Assert;
  */
 public class ProxyConfig implements Serializable {
 
-	/** use serialVersionUID from Spring 1.2 for interoperability */
+	/**
+	 * use serialVersionUID from Spring 1.2 for interoperability
+	 */
 	private static final long serialVersionUID = -8409359707199703185L;
 
 
+	/**
+	 * 标记接口是否直接对目标类进行代理
+	 */
 	private boolean proxyTargetClass = false;
 
+	/**
+	 * 标记是否对代理进行优化，true：若Bean有接口就直接使用JDK动态代理，没有接口就是用CGLIB
+	 */
 	private boolean optimize = false;
 
+	/**
+	 * 标记是否需要阻止通过该配置创建的代理对象转换为Advised类型，
+	 * 默认为false，表示允许转换
+	 */
 	boolean opaque = false;
 
+	/**
+	 * 标记代理对象是否应该被AOP框架通过AopContext以ThreadLocal的形式暴露出去
+	 */
 	boolean exposeProxy = false;
 
+	/**
+	 * 标记是否需要冻结代理对象，即在代理对象生成之后，是否允许对其进行修改
+	 */
 	private boolean frozen = false;
 
 
@@ -55,6 +75,7 @@ public class ProxyConfig implements Serializable {
 	 * <p>Note: Depending on the configuration of the concrete proxy factory,
 	 * the proxy-target-class behavior will also be applied if no interfaces
 	 * have been specified (and no interface autodetection is activated).
+	 *
 	 * @see org.springframework.aop.TargetSource#getTargetClass()
 	 */
 	public void setProxyTargetClass(boolean proxyTargetClass) {
@@ -149,6 +170,7 @@ public class ProxyConfig implements Serializable {
 
 	/**
 	 * Copy configuration from the other config object.
+	 *
 	 * @param other object to copy configuration from
 	 */
 	public void copyFrom(ProxyConfig other) {

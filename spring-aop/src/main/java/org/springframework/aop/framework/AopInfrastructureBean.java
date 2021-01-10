@@ -18,8 +18,11 @@ package org.springframework.aop.framework;
 
 /**
  * Marker interface that indicates a bean that is part of Spring's
- * AOP infrastructure. In particular, this implies that any such bean
+ * AOP infrastructure. In particular, this implies(意味着) that any such bean
  * is not subject to auto-proxying, even if a pointcut would match.
+ *
+ * 免被AOP代理的标记接口，若Bean实现了此接口，表明他是一个Spring AOP的基础类，那么这个类
+ * 是不会被AOP给代理的，即便他匹配pointcut表达式
  *
  * @author Juergen Hoeller
  * @since 2.0.3
