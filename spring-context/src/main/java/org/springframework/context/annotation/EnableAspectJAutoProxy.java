@@ -119,13 +119,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(AspectJAutoProxyRegistrar.class)
+@Import(AspectJAutoProxyRegistrar.class)  // 这一行代码很重要(点进去了解一下),注册Spring AOP自动服务,即开启AOP
 public @interface EnableAspectJAutoProxy {
 
 	/**
 	 * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
 	 * to standard Java interface-based proxies. The default is {@code false}.
-	 *
+	 * <p>
 	 * 表明该类是使用CGLIB动态代理还是JDK动态代理
 	 */
 	boolean proxyTargetClass() default false;
@@ -136,7 +136,7 @@ public @interface EnableAspectJAutoProxy {
 	 * Off by default, i.e. no guarantees that {@code AopContext} access will work.
 	 *
 	 * @since 4.3.1
-	 *
+	 * <p>
 	 * 解决内部调用不能使用代理的场景，默认为false表示不处理。
 	 * true则表示这个代理对象的副本就可以通过AopContext.currentProxy()获得，
 	 * 从而可以在Spring框架上下文张艳红拿到当前代理的对象
