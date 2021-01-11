@@ -28,8 +28,8 @@ import org.springframework.core.type.AnnotationMetadata;
  *
  * @author Chris Beams
  * @author Juergen Hoeller
- * @since 3.1
  * @see EnableAspectJAutoProxy
+ * @since 3.1
  */
 class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 
@@ -37,19 +37,37 @@ class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 	 * Register, escalate, and configure the AspectJ auto proxy creator based on the value
 	 * of the @{@link EnableAspectJAutoProxy#proxyTargetClass()} attribute on the importing
 	 * {@code @Configuration} class.
+	 * <p>
+	 * 通过断点调试的方式就知道这个方法是在什么时候调用的
 	 */
 	@Override
 	public void registerBeanDefinitions(
 			AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
+		/**
+		 * 往registry中注册类型为
+		 * org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator(基于注解的自动代理创建器)
+		 * 的BeanDefinition
+		 * 该类间接继承了org.springframework.beans.factory.config.SmartInstantiationAwareBeanPostProcessor
+		 */
 		AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
 
+		/**
+		 * 从参数importingClassMetadata中获取EnableAspectJAutoProxy注解的属性值
+		 * 即： exposeProxy的值&&proxyTargetClass的值
+		 */
 		AnnotationAttributes enableAspectJAutoProxy =
 				AnnotationConfigUtils.attributesFor(importingClassMetadata, EnableAspectJAutoProxy.class);
 		if (enableAspectJAutoProxy != null) {
+			/**
+			 * proxyTargetClass 表明该类是使用CGLIB动态代理还是JDK动态代理
+			 * true: 使用CGLIB的方式
+			 * false: 尽可能使用JDK动态代理的方式
+			 */
 			if (enableAspectJAutoProxy.getBoolean("proxyTargetClass")) {
 				AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 			}
+			// 解决内部调用不能使用代理的场景，默认为false表示不处理。
 			if (enableAspectJAutoProxy.getBoolean("exposeProxy")) {
 				AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry);
 			}

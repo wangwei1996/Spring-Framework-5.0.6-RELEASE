@@ -127,6 +127,8 @@ public @interface EnableAspectJAutoProxy {
 	 * to standard Java interface-based proxies. The default is {@code false}.
 	 * <p>
 	 * 表明该类是使用CGLIB动态代理还是JDK动态代理
+	 * true: 使用CGLIB的方式
+	 * false: 尽可能使用JDK动态代理的方式
 	 */
 	boolean proxyTargetClass() default false;
 
@@ -139,7 +141,7 @@ public @interface EnableAspectJAutoProxy {
 	 * <p>
 	 * 解决内部调用不能使用代理的场景，默认为false表示不处理。
 	 * true则表示这个代理对象的副本就可以通过AopContext.currentProxy()获得，
-	 * 从而可以在Spring框架上下文张艳红拿到当前代理的对象
+	 * 从而可以在Spring框架上下文拿到当前代理的对象
 	 */
 	boolean exposeProxy() default false;
 
