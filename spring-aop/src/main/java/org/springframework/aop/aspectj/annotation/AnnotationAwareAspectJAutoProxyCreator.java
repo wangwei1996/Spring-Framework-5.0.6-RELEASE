@@ -43,8 +43,8 @@ import org.springframework.util.Assert;
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
- * @since 2.0
  * @see org.springframework.aop.aspectj.annotation.AspectJAdvisorFactory
+ * @since 2.0
  */
 @SuppressWarnings("serial")
 public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorAutoProxyCreator {
@@ -89,6 +89,7 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 	@Override
 	protected List<Advisor> findCandidateAdvisors() {
 		// Add all the Spring advisors found according to superclass rules.
+		// 使用注解的方式还是支持基于xml的配置的AOP
 		List<Advisor> advisors = super.findCandidateAdvisors();
 		// Build Advisors for all AspectJ aspects in the bean factory.
 		if (this.aspectJAdvisorsBuilder != null) {
@@ -97,6 +98,10 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 		return advisors;
 	}
 
+	/**
+	 * 即判断beanClass是否是Spring AOP的基础类
+	 * Infrastructure: 基础设施
+	 */
 	@Override
 	protected boolean isInfrastructureClass(Class<?> beanClass) {
 		// Previously we setProxyTargetClass(true) in the constructor, but that has too
@@ -120,8 +125,7 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 	protected boolean isEligibleAspectBean(String beanName) {
 		if (this.includePatterns == null) {
 			return true;
-		}
-		else {
+		} else {
 			for (Pattern pattern : this.includePatterns) {
 				if (pattern.matcher(beanName).matches()) {
 					return true;
