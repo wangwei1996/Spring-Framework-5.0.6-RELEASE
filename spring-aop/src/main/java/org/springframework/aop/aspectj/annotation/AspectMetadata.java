@@ -35,13 +35,15 @@ import org.springframework.aop.support.ComposablePointcut;
  * Metadata for an AspectJ aspect class, with an additional Spring AOP pointcut
  * for the per clause.
  *
+ *
+ *
  * <p>Uses AspectJ 5 AJType reflection API, enabling us to work with different
  * AspectJ instantiation models such as "singleton", "pertarget" and "perthis".
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
- * @since 2.0
  * @see org.springframework.aop.aspectj.AspectJExpressionPointcut
+ * @since 2.0
  */
 @SuppressWarnings("serial")
 public class AspectMetadata implements Serializable {
@@ -75,8 +77,10 @@ public class AspectMetadata implements Serializable {
 
 	/**
 	 * Create a new AspectMetadata instance for the given aspect class.
+	 * 根據指定的aspectj創建一個AspectMetadata類型的實例
+	 *
 	 * @param aspectClass the aspect class
-	 * @param aspectName the name of the aspect
+	 * @param aspectName  the name of the aspect
 	 */
 	public AspectMetadata(Class<?> aspectClass, String aspectName) {
 		this.aspectName = aspectName;

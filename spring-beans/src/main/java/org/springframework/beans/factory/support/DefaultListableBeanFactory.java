@@ -184,11 +184,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	/**
 	 * Map of singleton and non-singleton bean names, keyed by dependency type
+	 * key: 类型
+	 * value: Bean name
 	 */
 	private final Map<Class<?>, String[]> allBeanNamesByType = new ConcurrentHashMap<>(64);
 
 	/**
 	 * Map of singleton-only bean names, keyed by dependency type
+	 * key: 类型
+	 * value: Bean name
 	 */
 	private final Map<Class<?>, String[]> singletonBeanNamesByType = new ConcurrentHashMap<>(64);
 
@@ -465,14 +469,20 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			return doGetBeanNamesForType(ResolvableType.forRawClass(type), includeNonSingletons, allowEagerInit);
 		}
 
+		/**
+		 * 第一次进入，allBeanNamesByType、singletonBeanNamesByType里的元素数量都是0
+		 */
 		Map<Class<?>, String[]> cache =
 				(includeNonSingletons ? this.allBeanNamesByType : this.singletonBeanNamesByType);
 		String[] resolvedBeanNames = cache.get(type);
+		// 如果有缓存，则直接返回
 		if (resolvedBeanNames != null) {
 			return resolvedBeanNames;
 		}
+		//  根据类型获取Bean名称
 		resolvedBeanNames = doGetBeanNamesForType(ResolvableType.forRawClass(type), includeNonSingletons, true);
 		if (ClassUtils.isCacheSafe(type, getBeanClassLoader())) {
+			// 构建类型到Bean名称的映射关系的缓存
 			cache.put(type, resolvedBeanNames);
 		}
 		return resolvedBeanNames;

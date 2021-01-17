@@ -60,20 +60,26 @@ public class BeanFactoryAdvisorRetrievalHelper {
 
 
 	/**
-	 * Find all eligible Advisor beans in the current bean factory,
+	 * Find all eligible(合格的，合适的) Advisor beans in the current bean factory,
 	 * ignoring FactoryBeans and excluding beans that are currently in creation.
 	 *
 	 * @return the list of {@link org.springframework.aop.Advisor} beans
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> findAdvisorBeans() {
-		// Determine list of advisor bean names, if not cached already.
+		// Determine(确定，决定，查明) list of advisor bean names, if not cached already.
 		String[] advisorNames = null;
 		synchronized (this) {
+			// 获取缓存的advisor的bean name,并不会提前初始化，因此第一次进入，advisorNames为null
 			advisorNames = this.cachedAdvisorBeanNames;
 			if (advisorNames == null) {
-				// Do not initialize FactoryBeans here: We need to leave all regular beans
-				// uninitialized to let the auto-proxy creator apply to them!
+				/**
+				 * Do not initialize FactoryBeans here: We need to leave all regular beans uninitialized to let the auto-proxy creator apply to them!
+				 *
+				 * 不要在这里初始化FactoryBeans:我们需要将所有常规Bean保持为未初始化状态以便让自动代理创建器应用于他们
+				 * Ancestors: 祖先
+				 * 这里的祖先指的是容器之间的关系(如: org.springframework.beans.factory.HierarchicalBeanFactory)
+				 */
 				advisorNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 						this.beanFactory, Advisor.class, true, false);
 				this.cachedAdvisorBeanNames = advisorNames;
@@ -83,8 +89,10 @@ public class BeanFactoryAdvisorRetrievalHelper {
 			return new LinkedList<>();
 		}
 
+		// 遍历
 		List<Advisor> advisors = new LinkedList<>();
 		for (String name : advisorNames) {
+			// 判断是否是符合条件的
 			if (isEligibleBean(name)) {
 				if (this.beanFactory.isCurrentlyInCreation(name)) {
 					if (logger.isDebugEnabled()) {

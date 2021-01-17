@@ -55,6 +55,9 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 	@Nullable
 	private AspectJAdvisorFactory aspectJAdvisorFactory;
 
+	/**
+	 * 工具人，爲創建AspectJ對應的Advisor
+	 */
 	@Nullable
 	private BeanFactoryAspectJAdvisorsBuilder aspectJAdvisorsBuilder;
 
@@ -86,12 +89,21 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 	}
 
 
+	/**
+	 * Candidate: 候选人，被认定合适者
+	 */
 	@Override
 	protected List<Advisor> findCandidateAdvisors() {
-		// Add all the Spring advisors found according to superclass rules.
-		// 使用注解的方式还是支持基于xml的配置的AOP
+		/**
+		 * Add all the Spring advisors found according to superclass rules.
+		 * 使用注解的方式还是支持基于xml的配置的AOP
+		 */
+		// 调用父类方法，获取所有符合的Advisor
 		List<Advisor> advisors = super.findCandidateAdvisors();
-		// Build Advisors for all AspectJ aspects in the bean factory.
+		/**
+		 * Build Advisors for all AspectJ aspects in the bean factory.
+		 * 为BeanFactory中的所有AspectJ切面构建Advisors
+		 */
 		if (this.aspectJAdvisorsBuilder != null) {
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}

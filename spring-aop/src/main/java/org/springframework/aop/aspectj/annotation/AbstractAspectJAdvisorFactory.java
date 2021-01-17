@@ -61,7 +61,9 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	private static final String AJC_MAGIC = "ajc$";
 
 
-	/** Logger available to subclasses */
+	/**
+	 * Logger available to subclasses
+	 */
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	protected final ParameterNameDiscoverer parameterNameDiscoverer = new AspectJAnnotationParameterNameDiscoverer();
@@ -72,6 +74,8 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	 * if it has the @Aspect annotation, and was not compiled by ajc. The reason for this latter test
 	 * is that aspects written in the code-style (AspectJ language) also have the annotation present
 	 * when compiled by ajc with the -1.5 flag, yet they cannot be consumed by Spring AOP.
+	 * 我们认为有些东西是适合Spring AOP系统使用的AspectJ方面，如果它有@Aspect注释，并且不是由ajc编译的。
+	 * 后一种测试的原因，以代码样式（AspectJ语言）编写的方面也存在注释吗，当ajc用-1.5标志编译时，它们不能被SpringAOP使用。
 	 */
 	@Override
 	public boolean isAspect(Class<?> clazz) {
@@ -128,7 +132,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	@SuppressWarnings("unchecked")
 	@Nullable
 	protected static AspectJAnnotation<?> findAspectJAnnotationOnMethod(Method method) {
-		Class<?>[] classesToLookFor = new Class<?>[] {
+		Class<?>[] classesToLookFor = new Class<?>[]{
 				Before.class, Around.class, After.class, AfterReturning.class, AfterThrowing.class, Pointcut.class};
 		for (Class<?> c : classesToLookFor) {
 			AspectJAnnotation<?> foundAnnotation = findAnnotation(method, (Class<Annotation>) c);
@@ -144,8 +148,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 		A result = AnnotationUtils.findAnnotation(method, toLookFor);
 		if (result != null) {
 			return new AspectJAnnotation<>(result);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
@@ -168,17 +171,17 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	 */
 	protected static class AspectJAnnotation<A extends Annotation> {
 
-		private static final String[] EXPRESSION_PROPERTIES = new String[] {"value", "pointcut"};
+		private static final String[] EXPRESSION_PROPERTIES = new String[]{"value", "pointcut"};
 
 		private static Map<Class<?>, AspectJAnnotationType> annotationTypes = new HashMap<>();
 
 		static {
-			annotationTypes.put(Pointcut.class,AspectJAnnotationType.AtPointcut);
-			annotationTypes.put(After.class,AspectJAnnotationType.AtAfter);
-			annotationTypes.put(AfterReturning.class,AspectJAnnotationType.AtAfterReturning);
-			annotationTypes.put(AfterThrowing.class,AspectJAnnotationType.AtAfterThrowing);
-			annotationTypes.put(Around.class,AspectJAnnotationType.AtAround);
-			annotationTypes.put(Before.class,AspectJAnnotationType.AtBefore);
+			annotationTypes.put(Pointcut.class, AspectJAnnotationType.AtPointcut);
+			annotationTypes.put(After.class, AspectJAnnotationType.AtAfter);
+			annotationTypes.put(AfterReturning.class, AspectJAnnotationType.AtAfterReturning);
+			annotationTypes.put(AfterThrowing.class, AspectJAnnotationType.AtAfterThrowing);
+			annotationTypes.put(Around.class, AspectJAnnotationType.AtAround);
+			annotationTypes.put(Before.class, AspectJAnnotationType.AtBefore);
 		}
 
 		private final A annotation;
@@ -197,8 +200,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 			try {
 				this.pointcutExpression = resolveExpression(annotation);
 				this.argumentNames = (String) annotation.getClass().getMethod("argNames").invoke(annotation);
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				throw new IllegalArgumentException(annotation + " cannot be an AspectJ annotation", ex);
 			}
 		}
@@ -217,8 +219,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 				Method method;
 				try {
 					method = annotation.getClass().getDeclaredMethod(methodName);
-				}
-				catch (NoSuchMethodException ex) {
+				} catch (NoSuchMethodException ex) {
 					method = null;
 				}
 				if (method != null) {
@@ -277,8 +278,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 					names[i] = strTok.nextToken();
 				}
 				return names;
-			}
-			else {
+			} else {
 				return null;
 			}
 		}
