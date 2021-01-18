@@ -212,7 +212,9 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 			// We know these methods exist with the same name on each object,
 			// but need to invoke them reflectively as there isn't a common interface.
 			try {
+				// 切点表达式，即AspectStu中的@before等注解的值，即"embed()"
 				this.pointcutExpression = resolveExpression(annotation);
+				// argNames 见org.aspectj.lang.annotation.Before.argNames
 				this.argumentNames = (String) annotation.getClass().getMethod("argNames").invoke(annotation);
 			} catch (Exception ex) {
 				throw new IllegalArgumentException(annotation + " cannot be an AspectJ annotation", ex);

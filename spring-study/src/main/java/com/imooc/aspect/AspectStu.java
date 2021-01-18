@@ -48,7 +48,7 @@ public class AspectStu {
 		System.out.println("I am execution(* com.imooc.services..*.*(..)) --->afterThrowing");
 	}
 
-	@Around(value = "embed()")
+	@Around(value = "embed()",argNames = "joinPoint")
 	public Object aroundAdvice(JoinPoint joinPoint) throws Throwable {
 		System.out.println("execution(* com.imooc.services..*.*(..)) --->aroundAdvice--->proceed方法执行之前");
 		Object returnVal = null;

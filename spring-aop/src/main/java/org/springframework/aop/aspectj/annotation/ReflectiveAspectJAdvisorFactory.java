@@ -282,14 +282,16 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		// 切面类的校验
 		validate(candidateAspectClass);
 
+		// 获取方法上的AspectJ的注解
 		AspectJAnnotation<?> aspectJAnnotation =
 				AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(candidateAdviceMethod);
+		// 严谨(判空，即使前面已经判断了)，当方法没有被AspectJ的注解标注，则返回null
 		if (aspectJAnnotation == null) {
 			return null;
 		}
 
 		// If we get here, we know we have an AspectJ method.
-		// Check that it's an AspectJ-annotated class
+		// Check that it's an AspectJ-annotated class 即判断这个切面类是否是spring中的切面类
 		if (!isAspect(candidateAspectClass)) {
 			throw new AopConfigException("Advice must be declared inside an aspect type: " +
 					"Offending method '" + candidateAdviceMethod + "' in class [" +
@@ -302,6 +304,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 
 		AbstractAspectJAdvice springAdvice;
 
+		// 对获取到的注解进行处理
 		switch (aspectJAnnotation.getAnnotationType()) {
 			case AtBefore:
 				springAdvice = new AspectJMethodBeforeAdvice(
@@ -342,12 +345,17 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		}
 
 		// Now to configure the advice...
+		// 设置切面类的名称
 		springAdvice.setAspectName(aspectName);
+		// 设置上声明的顺序
 		springAdvice.setDeclarationOrder(declarationOrder);
+		// 获取参数名称列表（AspectJ注解的argNames参数值： 如org.aspectj.lang.annotation.Before.argNames）
 		String[] argNames = this.parameterNameDiscoverer.getParameterNames(candidateAdviceMethod);
 		if (argNames != null) {
+			// 设置注解参数值
 			springAdvice.setArgumentNamesFromStringArray(argNames);
 		}
+		// 参数绑定(org.aspectj.lang.annotation.Before.argNames里面的和切面方法的参数进行绑定)，但是为什么?
 		springAdvice.calculateArgumentBindings();
 
 		return springAdvice;
