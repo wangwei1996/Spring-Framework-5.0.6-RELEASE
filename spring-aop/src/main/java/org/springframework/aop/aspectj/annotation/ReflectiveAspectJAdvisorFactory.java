@@ -134,8 +134,9 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 				new LazySingletonAspectInstanceFactoryDecorator(aspectInstanceFactory);
 
 		List<Advisor> advisors = new LinkedList<>();
-		//
+		// 遍历切面类aspectClass中所有的方法(除了被@PointCut注解标注的方法)
 		for (Method method : getAdvisorMethods(aspectClass)) {
+
 			Advisor advisor = getAdvisor(method, lazySingletonAspectInstanceFactory, advisors.size(), aspectName);
 			if (advisor != null) {
 				advisors.add(advisor);
@@ -202,33 +203,57 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	}
 
 
+	/**
+	 * @param candidateAdviceMethod    the candidate(候选人，候补者；应试者) advice method 切面类的方法，不一定是切面方法(即不一定被注解标注)
+	 * @param aspectInstanceFactory    the aspect instance factory
+	 * @param declarationOrderInAspect 切面类中切面方法的序号
+	 * @param aspectName               the name of the aspect 切面类名称
+	 * @return
+	 */
 	@Override
 	@Nullable
 	public Advisor getAdvisor(Method candidateAdviceMethod, MetadataAwareAspectInstanceFactory aspectInstanceFactory,
 							  int declarationOrderInAspect, String aspectName) {
 
+		// 校验一下切面类
 		validate(aspectInstanceFactory.getAspectMetadata().getAspectClass());
 
+		// 根据方法来获取切点表达式
 		AspectJExpressionPointcut expressionPointcut = getPointcut(
 				candidateAdviceMethod, aspectInstanceFactory.getAspectMetadata().getAspectClass());
+		// 返回为null，则说明这个method没有被AspectJ的注解标注
 		if (expressionPointcut == null) {
 			return null;
 		}
 
+		/**
+		 * 创建Advisor
+		 *
+		 */
 		return new InstantiationModelAwarePointcutAdvisorImpl(expressionPointcut, candidateAdviceMethod,
 				this, aspectInstanceFactory, declarationOrderInAspect, aspectName);
 	}
 
+	/**
+	 * 获取切点
+	 *
+	 * @param candidateAdviceMethod 切面类中的方法
+	 * @param candidateAspectClass  切面类
+	 * @return
+	 */
 	@Nullable
 	private AspectJExpressionPointcut getPointcut(Method candidateAdviceMethod, Class<?> candidateAspectClass) {
+		// 找到方法candidateAdviceMethod中的第一个AspectJ中的注解
 		AspectJAnnotation<?> aspectJAnnotation =
 				AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(candidateAdviceMethod);
+		// 如果没有被AspectJ注解标注，则直接返回null
 		if (aspectJAnnotation == null) {
 			return null;
 		}
 
 		AspectJExpressionPointcut ajexp =
 				new AspectJExpressionPointcut(candidateAspectClass, new String[0], new Class<?>[0]);
+		//  aspectJAnnotation.getPointcutExpression() 就是注解的value,例如，对于AspectStu来说就是 "embed()"
 		ajexp.setExpression(aspectJAnnotation.getPointcutExpression());
 		if (this.beanFactory != null) {
 			ajexp.setBeanFactory(this.beanFactory);
@@ -237,12 +262,24 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	}
 
 
+	/**
+	 * 获取切面通知
+	 *
+	 * @param candidateAdviceMethod the candidate advice method
+	 * @param expressionPointcut    the AspectJ expression pointcut
+	 * @param aspectInstanceFactory the aspect instance factory
+	 * @param declarationOrder      the declaration order within the aspect
+	 * @param aspectName            the name of the aspect
+	 * @return
+	 */
 	@Override
 	@Nullable
 	public Advice getAdvice(Method candidateAdviceMethod, AspectJExpressionPointcut expressionPointcut,
 							MetadataAwareAspectInstanceFactory aspectInstanceFactory, int declarationOrder, String aspectName) {
 
+		// 获取切面类的类型
 		Class<?> candidateAspectClass = aspectInstanceFactory.getAspectMetadata().getAspectClass();
+		// 切面类的校验
 		validate(candidateAspectClass);
 
 		AspectJAnnotation<?> aspectJAnnotation =
