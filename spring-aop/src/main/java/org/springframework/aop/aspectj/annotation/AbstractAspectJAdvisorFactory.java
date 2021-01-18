@@ -102,9 +102,18 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 		return false;
 	}
 
+	/**
+	 * 判断指定的类是否是AspectJ的切面类
+	 *
+	 * @param aspectClass the supposed AspectJ annotation-style class to validate
+	 * @throws AopConfigException
+	 */
 	@Override
 	public void validate(Class<?> aspectClass) throws AopConfigException {
-		// If the parent has the annotation and isn't abstract it's an error
+		/**
+		 * If the parent has the annotation and isn't abstract it's an error
+		 * 父类必须是抽象的且不能被Aspect注解标注
+		 */
 		if (aspectClass.getSuperclass().getAnnotation(Aspect.class) != null &&
 				!Modifier.isAbstract(aspectClass.getSuperclass().getModifiers())) {
 			throw new AopConfigException("[" + aspectClass.getName() + "] cannot extend concrete aspect [" +

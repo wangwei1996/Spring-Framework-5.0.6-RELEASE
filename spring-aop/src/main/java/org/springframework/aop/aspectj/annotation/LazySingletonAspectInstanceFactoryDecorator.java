@@ -38,7 +38,8 @@ public class LazySingletonAspectInstanceFactoryDecorator implements MetadataAwar
 
 
 	/**
-	 * Create a new lazily initializing decorator for the given AspectInstanceFactory.
+	 * Create a new lazily initializing decorator(装饰者) for the given AspectInstanceFactory.
+	 *
 	 * @param maaif the MetadataAwareAspectInstanceFactory to decorate
 	 */
 	public LazySingletonAspectInstanceFactoryDecorator(MetadataAwareAspectInstanceFactory maaif) {
@@ -55,8 +56,7 @@ public class LazySingletonAspectInstanceFactoryDecorator implements MetadataAwar
 			if (mutex == null) {
 				aspectInstance = this.maaif.getAspectInstance();
 				this.materialized = aspectInstance;
-			}
-			else {
+			} else {
 				synchronized (mutex) {
 					aspectInstance = this.materialized;
 					if (aspectInstance == null) {
