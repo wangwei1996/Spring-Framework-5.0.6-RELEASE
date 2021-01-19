@@ -46,6 +46,9 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 	private final AspectJAdvisorFactory advisorFactory;
 
+	/**
+	 * 功能1： 存放切面类bean的名称，可用于判断spring中advisor是否已经构建过
+	 */
 	@Nullable
 	private volatile List<String> aspectBeanNames;
 
@@ -90,6 +93,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 	public List<Advisor> buildAspectJAdvisors() {
 		List<String> aspectNames = this.aspectBeanNames;
 
+		// 当没有处理过Advisor
 		if (aspectNames == null) {
 			synchronized (this) {
 				aspectNames = this.aspectBeanNames;
@@ -99,6 +103,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 					// 從BeanFactory(包括其父容器)中獲取到指定類型的Bean名稱
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
+					// 迭代所有的bean,构建Advisor
 					for (String beanName : beanNames) {
 						// 判斷當前BeanName是否有資格
 						if (!isEligibleBean(beanName)) {
@@ -115,15 +120,17 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						}
 						// 判斷這個beanType是否爲切面類型
 						if (this.advisorFactory.isAspect(beanType)) {
+							// 保存aspectName
 							aspectNames.add(beanName);
 							// 构造AspectJ的元数据
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
-							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
+							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) { // singleton
 								// 构建Aspect实例工厂
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
-								//
+								// 获取切面类中所有的Advice，并且转换为Advisor
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+								// 如果切面类是单例的，则构建对于Advisor的缓存，否则，则构建对应的AspectFactory的缓存
 								if (this.beanFactory.isSingleton(beanName)) {
 									this.advisorsCache.put(beanName, classAdvisors);
 								} else {
@@ -132,7 +139,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 								advisors.addAll(classAdvisors);
 							} else {
 								// Per target or per this.
-								if (this.beanFactory.isSingleton(beanName)) {
+								if (this.beanFactory.isSingleton(beanName)) { // aspect不能是单例的
 									throw new IllegalArgumentException("Bean with name '" + beanName +
 											"' is a singleton, but aspect instantiation model is not singleton");
 								}
@@ -143,12 +150,15 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 							}
 						}
 					}
+					// 构建缓存,表示advisor已经构建过
 					this.aspectBeanNames = aspectNames;
+					//  返回所有的Advisor
 					return advisors;
 				}
 			}
 		}
 
+		// 当已经处理过一次了，则直接从缓存中获取
 		if (aspectNames.isEmpty()) {
 			return Collections.emptyList();
 		}

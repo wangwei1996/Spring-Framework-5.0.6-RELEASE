@@ -171,6 +171,7 @@ class InstantiationModelAwarePointcutAdvisorImpl
 	 * @return
 	 */
 	private Advice instantiateAdvice(AspectJExpressionPointcut pointcut) {
+		// 从AspectJAdvisorFactory中获取切面通知
 		Advice advice = this.aspectJAdvisorFactory.getAdvice(this.aspectJAdviceMethod, pointcut,
 				this.aspectInstanceFactory, this.declarationOrder, this.aspectName);
 		return (advice != null ? advice : EMPTY_ADVICE);

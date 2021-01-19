@@ -279,7 +279,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			}
 			/**
 			 * isInfrastructureClass: 判断beanClass是否是Spring AOP中的基础类
-			 * shouldSkip： 判断beanClass是否是Advisor,这个方法值得分析一下
+			 * shouldSkip： 判断beanClass是否是Advisor,这个方法值得分析一下(是否该被跳过： 该bean是否是切面类)
 			 */
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);

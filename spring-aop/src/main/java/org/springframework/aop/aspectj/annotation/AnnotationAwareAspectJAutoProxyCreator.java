@@ -105,6 +105,7 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 		 * 为BeanFactory中的所有AspectJ切面构建Advisors
 		 */
 		if (this.aspectJAdvisorsBuilder != null) {
+			// 将Spring中所有的AspecgJ切面类中的通知构建为advisor
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}
 		return advisors;

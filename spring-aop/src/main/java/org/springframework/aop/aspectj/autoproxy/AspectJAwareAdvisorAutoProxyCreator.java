@@ -97,13 +97,14 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 	/**
 	 * optimization: 最佳的，最佳条件选择
 	 *
-	 * @param beanClass the class of the bean
-	 * @param beanName  the name of the bean
-	 * @return
+	 * @param beanClass the class of the bean 正在实例化的Bean的类型
+	 * @param beanName  the name of the bean 正在实例化的Bean的名称
+	 * @return 是否应该被跳过： 即该类是否为切面类
 	 */
 	@Override
 	protected boolean shouldSkip(Class<?> beanClass, String beanName) {
 		// TODO: Consider optimization by caching the list of the aspect names
+		// 获取Spring 中所有的切面通知（转换为了Advisor）
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 		for (Advisor advisor : candidateAdvisors) {
 			if (advisor instanceof AspectJPointcutAdvisor &&

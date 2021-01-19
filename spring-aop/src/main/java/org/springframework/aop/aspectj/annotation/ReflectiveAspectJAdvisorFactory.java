@@ -136,27 +136,30 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		List<Advisor> advisors = new LinkedList<>();
 		// 遍历切面类aspectClass中所有的方法(除了被@PointCut注解标注的方法)
 		for (Method method : getAdvisorMethods(aspectClass)) {
-
+			// 将切面类(被AspectJ注解标注的，@PointCut注解除外)中的通知转换为Advisor
 			Advisor advisor = getAdvisor(method, lazySingletonAspectInstanceFactory, advisors.size(), aspectName);
+			// 当切面类中的方法没有被AspectJ注解标注或者被@PointCut注解标注的时候，返回null
 			if (advisor != null) {
 				advisors.add(advisor);
 			}
 		}
 
-		// If it's a per target aspect, emit the dummy instantiating aspect.
+		// If it's a per target aspect, emit(发出) the dummy(假的，仿真的) instantiating aspect.
+		// 如果寻找的增强器不为空而且又配置了增强延迟初始化，那么需要在首位加入同步实例化增强器????
 		if (!advisors.isEmpty() && lazySingletonAspectInstanceFactory.getAspectMetadata().isLazilyInstantiated()) {
 			Advisor instantiationAdvisor = new SyntheticInstantiationAdvisor(lazySingletonAspectInstanceFactory);
 			advisors.add(0, instantiationAdvisor);
 		}
 
-		// Find introduction fields.
+		// Find introduction(n. 介绍；引进；采用；入门；传入) fields.
+		// 遍历所有的field，判断是否被@DeclareParents注解标注
 		for (Field field : aspectClass.getDeclaredFields()) {
 			Advisor advisor = getDeclareParentsAdvisor(field);
 			if (advisor != null) {
 				advisors.add(advisor);
 			}
 		}
-
+		// 返回所有的advisor
 		return advisors;
 	}
 
@@ -357,7 +360,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		}
 		// 参数绑定(org.aspectj.lang.annotation.Before.argNames里面的和切面方法的参数进行绑定)，但是为什么?
 		springAdvice.calculateArgumentBindings();
-
+		// 返回切面通知
 		return springAdvice;
 	}
 
