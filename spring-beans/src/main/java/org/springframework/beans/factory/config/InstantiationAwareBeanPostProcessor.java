@@ -92,8 +92,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * Returning {@code false} will also prevent any subsequent InstantiationAwareBeanPostProcessor
 	 * instances being invoked on this bean instance.
 	 * @throws org.springframework.beans.BeansException in case of errors
-	 *
-	 * 在Bean实例化之后，在属性被设置值(populateBean)之前,若返回false，则spring不再对对应的Bean实例进行自动依赖注入
+	 *                                                  在Bean实例化之后，在属性被设置值(populateBean)之前,若返回false，则spring不再对对应的Bean实例进行自动依赖注入
 	 */
 	default boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
 		return true;
@@ -118,9 +117,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 	 * to skip property population
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.MutablePropertyValues
-	 *
+	 * <p>
 	 * 在Spring处理完成默认的成员属性，应用到指定的Bean之前进行回调，可以用来检查和修改属性。
-	 *   例如: org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues(org.springframework.beans.PropertyValues, java.beans.PropertyDescriptor[], java.lang.Object, java.lang.String)
+	 * 例如: org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor#postProcessPropertyValues(org.springframework.beans.PropertyValues, java.beans.PropertyDescriptor[], java.lang.Object, java.lang.String)
 	 */
 	@Nullable
 	default PropertyValues postProcessPropertyValues(

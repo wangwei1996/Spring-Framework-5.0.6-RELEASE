@@ -1913,7 +1913,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					(mbd != null ? mbd.getResourceDescription() : null),
 					beanName, "Invocation of init method failed", ex);
 		}
-		// 做一些后置处理(before方法)(BeanDefinition是业务上的，非Spring内部的)
+		/**
+		 * 做一些后置处理(before方法)(BeanDefinition是业务上的，非Spring内部的)
+		 *  在这里会调用方法org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor#postProcessAfterInstantiation(java.lang.Object, java.lang.String)
+		 *  从而进行增强处理,例如进行代理
+		 */
 		if (mbd == null || !mbd.isSynthetic()) {
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}

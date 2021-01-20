@@ -297,7 +297,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
 		// 如果获取到了用户自定义的TargetSource,则构建缓存,并且直接构建代理对象并返回.但是当用户没有自定义的时候，
 		// 那么代理对象又在哪里创建的(答案: org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator.postProcessAfterInitialization)
-		// 但是代码为什么又执行到postProcessAfterInitialization中呢，回顾一下Bean创建的过程
+		// 但是代码为什么又执行到postProcessAfterInitialization(实现于org.springframework.beans.factory.config.BeanPostProcessor)中呢，回顾一下Bean创建的过程
 		if (targetSource != null) {
 			if (StringUtils.hasLength(beanName)) {
 				this.targetSourcedBeans.add(beanName);
@@ -334,11 +334,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 *
 	 * @see #getAdvicesAndAdvisorsForBean
 	 * <p>
-	 * 创建动态代理类的核心
+	 * 创建动态代理类的核心，这是 Bean级别的后置处理器，即实现于org.springframework.beans.factory.config.BeanPostProcessor
+	 * 这里是对创建好的Bean进行后置增强
 	 */
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) throws BeansException {
 		if (bean != null) {
+			// 如果有缓存，那么就是切面类了，切面类不用处理
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			if (!this.earlyProxyReferences.contains(cacheKey)) {
 				return wrapIfNecessary(bean, beanName, cacheKey);
@@ -370,7 +372,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	}
 
 	/**
-	 * Wrap the given bean if necessary, i.e. if it is eligible for being proxied.
+	 * Wrap the given bean if necessary, i.e. if it is eligible(有资格的; 合格的; 具备条件的;) for being proxied.
+	 * 如果有必要，则对指定的Bean进行包装,即是否有资格被代理。
 	 *
 	 * @param bean     the raw bean instance
 	 * @param beanName the name of the bean
@@ -378,18 +381,21 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @return a proxy wrapping the bean, or the raw bean instance as-is
 	 */
 	protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
+		// 如果包含在this.targetSourcedBeans中，则说明已经被包装过了(见代码org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator.postProcessBeforeInstantiation)
 		if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
 			return bean;
 		}
+		// 如果是切面类，则返回
 		if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
 			return bean;
 		}
+		// 再次校验一下，见代码: org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator.postProcessBeforeInstantiation
 		if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
 			this.advisedBeans.put(cacheKey, Boolean.FALSE);
 			return bean;
 		}
 
-		// Create proxy if we have advice.
+		// Create proxy if we have advice.(如果有切面通知，则创建代理)
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
