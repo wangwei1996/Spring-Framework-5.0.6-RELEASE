@@ -147,7 +147,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	private final Map<Object, Class<?>> proxyTypes = new ConcurrentHashMap<>(16);
 
 	/**
-	 * 存放的是所有已经被处理过(被动态代理了的)的Bean
+	 * 存放的是所有已经被处理过的Bean
+	 * true: 表示被代理了的
+	 * false： 表示被处理了，但是不需要被代理的
 	 */
 	private final Map<Object, Boolean> advisedBeans = new ConcurrentHashMap<>(256);
 
@@ -395,16 +397,22 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			return bean;
 		}
 
-		// Create proxy if we have advice.(如果有切面通知，则创建代理)
+		/**
+		 * Create proxy if we have advice.(如果有切面通知，则创建代理)
+		 * 获取目前Bean匹配上的Advisor,若匹配上了，则返回对应的advisor数组，反之，返回DO_NOT_PROXY;
+		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+		// 当有advisor与Bean匹配上了
 		if (specificInterceptors != DO_NOT_PROXY) {
+			// 添加缓存,并设置为被代理了
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
+			// 创建代理对象！！！
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());
 			return proxy;
 		}
-
+		// 当没有advisor与目前的Bean匹配上，则添加缓存并设置为不需要代理
 		this.advisedBeans.put(cacheKey, Boolean.FALSE);
 		return bean;
 	}
@@ -485,13 +493,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	/**
 	 * Create an AOP proxy for the given bean.
 	 *
-	 * @param beanClass            the class of the bean
-	 * @param beanName             the name of the bean
+	 * @param beanClass            the class of the bean 当前Bean的类型
+	 * @param beanName             the name of the bean 当前Bean的名称
 	 * @param specificInterceptors the set of interceptors that is
-	 *                             specific to this bean (may be empty, but not null)
+	 *                             specific to this bean (may be empty, but not null) 符合当前Bean的Advisor列表
 	 * @param targetSource         the TargetSource for the proxy,
-	 *                             already pre-configured to access the bean
-	 * @return the AOP proxy for the bean
+	 *                             already pre-configured to access the bean 重要！！！，Spring AOP代理的是TargetSource
+	 * @return the AOP proxy for the bean 该Bean的代理对象
 	 * @see #buildAdvisors
 	 */
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName,

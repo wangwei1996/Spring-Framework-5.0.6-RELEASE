@@ -73,7 +73,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * adj. 合格的，合适的；符合条件的；有资格当选的
 	 * n. 合格者；适任者；有资格者
 	 * <p>
-	 * 为指定的Bean获取Advices以及Advisors
+	 * 为指定的Bean获取Advices以及Advisors，如果需要代理，则返回advisor列表，反之，则返回DO_NOT_PROXY;
 	 *
 	 * @param beanClass
 	 * @param beanName
@@ -84,10 +84,13 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	protected Object[] getAdvicesAndAdvisorsForBean(
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
 
+		// 爲指定的Bean获取可以使用的Advisor
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
+		// 没有匹配的Advisor
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
 		}
+		// 将匹配的Advisor列表转换为数组并返回
 		return advisors.toArray();
 	}
 
@@ -104,6 +107,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
 
+		// 从Spring容器中获取所有的Advisor
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
@@ -128,16 +132,19 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	/**
 	 * Search the given candidate Advisors to find all Advisors that
 	 * can apply to the specified bean.
+	 * <p>
+	 * 从给定的Advisor候选者列表中获取能够应用到这个指定Bean上的Advisor
 	 *
-	 * @param candidateAdvisors the candidate Advisors
-	 * @param beanClass         the target's bean class
-	 * @param beanName          the target's bean name
+	 * @param candidateAdvisors the candidate Advisors Spring容器中所有的Advisor
+	 * @param beanClass         the target's bean class 目标Bean类型
+	 * @param beanName          the target's bean name 目标Bean名称
 	 * @return the List of applicable Advisors
 	 * @see ProxyCreationContext#getCurrentProxiedBeanName()
 	 */
 	protected List<Advisor> findAdvisorsThatCanApply(
 			List<Advisor> candidateAdvisors, Class<?> beanClass, String beanName) {
 
+		// 保存代理创建的上下文
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
