@@ -492,40 +492,58 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	/**
 	 * Create an AOP proxy for the given bean.
+	 * <p>
+	 * 给指定的Bean创建AOP代理
 	 *
 	 * @param beanClass            the class of the bean 当前Bean的类型
 	 * @param beanName             the name of the bean 当前Bean的名称
 	 * @param specificInterceptors the set of interceptors that is
 	 *                             specific to this bean (may be empty, but not null) 符合当前Bean的Advisor列表
 	 * @param targetSource         the TargetSource for the proxy,
-	 *                             already pre-configured to access the bean 重要！！！，Spring AOP代理的是TargetSource
+	 *                             already pre-configured to access the bean 重要！！！，<<<<<<=== Spring AOP代理的是TargetSource =====>
+	 *                             org.springframework.aop.target.SingletonTargetSource
 	 * @return the AOP proxy for the bean 该Bean的代理对象
 	 * @see #buildAdvisors
 	 */
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
 								 @Nullable Object[] specificInterceptors, TargetSource targetSource) {
 
+		/**
+		 * 为什么BeanFactory的类型得是ConfigurableListableBeanFactory？
+		 * 给BeanDefinition设置上属性，用于
+		 */
 		if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
 
+		// 创建代理工厂
 		ProxyFactory proxyFactory = new ProxyFactory();
+		// 复制代理相关的配置到代理工厂
 		proxyFactory.copyFrom(this);
 
+		/**
+		 * 判断代理配置是否是直接通过接口来创建代理对象, false表示是的（默认值）,因为为TRUE表示是已经处理了，即使用CGLIB来创建代理对象
+		 */
 		if (!proxyFactory.isProxyTargetClass()) {
+			// 判断当前Bean是否使用目标类来创建代理对象(即是否是使用CGLIB来创建代理)
 			if (shouldProxyTargetClass(beanClass, beanName)) {
+				// 修改ProxyFactory的配置，即当前Bean是使用CGLIB来创建代理对象的
 				proxyFactory.setProxyTargetClass(true);
 			} else {
+				// 校对Bean所有的接口，并将合适的接口应用到ProxyFactory中,若没有，则使用目标类来创建代理类(即CGLIB代理)
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}
 
+		// 获取BeanFactory中所有的Advisor
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
-
+		// 设置frozen标志位，即设置代理类创建完成之后是否能修改
 		proxyFactory.setFrozen(this.freezeProxy);
+
+		// org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator
 		if (advisorsPreFiltered()) {
 			proxyFactory.setPreFiltered(true);
 		}
@@ -537,6 +555,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * Determine whether the given bean should be proxied with its target class rather than its interfaces.
 	 * <p>Checks the {@link AutoProxyUtils#PRESERVE_TARGET_CLASS_ATTRIBUTE "preserveTargetClass" attribute}
 	 * of the corresponding bean definition.
+	 * <p>
+	 * 判断给定的Bean是否使用他的目标类型进行创建代理而不是他的接口
 	 *
 	 * @param beanClass the class of the bean
 	 * @param beanName  the name of the bean
@@ -564,8 +584,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	}
 
 	/**
-	 * Determine the advisors for the given bean, including the specific interceptors
-	 * as well as the common interceptor, all adapted to the Advisor interface.
+	 * Determine(确定) the advisors for the given bean, including the specific interceptors
+	 * as well as the common interceptor, all adapted(改编，改写) to the Advisor interface.
 	 *
 	 * @param beanName             the name of the bean
 	 * @param specificInterceptors the set of interceptors that is
@@ -574,12 +594,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 */
 	protected Advisor[] buildAdvisors(@Nullable String beanName, @Nullable Object[] specificInterceptors) {
 		// Handle prototypes correctly...
+		// 将IOC容器中的拦截器转换为Advisor
 		Advisor[] commonInterceptors = resolveInterceptorNames();
 
 		List<Object> allInterceptors = new ArrayList<>();
 		if (specificInterceptors != null) {
 			allInterceptors.addAll(Arrays.asList(specificInterceptors));
 			if (commonInterceptors.length > 0) {
+				// 是否拦截器先调用
 				if (this.applyCommonInterceptorsFirst) {
 					allInterceptors.addAll(0, Arrays.asList(commonInterceptors));
 				} else {
@@ -595,7 +617,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		Advisor[] advisors = new Advisor[allInterceptors.size()];
+		// 遍历所有的Advisor
 		for (int i = 0; i < allInterceptors.size(); i++) {
+			// 因为allInterceptors元素的类型是Object，因此这里还是需要包装一下，即包装为Advisor
 			advisors[i] = this.advisorAdapterRegistry.wrap(allInterceptors.get(i));
 		}
 		return advisors;
@@ -603,6 +627,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	/**
 	 * Resolves the specified interceptor names to Advisor objects.
+	 * <p>
+	 * 将指定的Interceptor转换为Advisor对象
 	 *
 	 * @see #setInterceptorNames
 	 */
@@ -611,6 +637,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		ConfigurableBeanFactory cbf = (bf instanceof ConfigurableBeanFactory ? (ConfigurableBeanFactory) bf : null);
 		List<Advisor> advisors = new ArrayList<>();
 		for (String beanName : this.interceptorNames) {
+			// 当BeanFactor没有初始化完成或者该Bean不是在创建中
 			if (cbf == null || !cbf.isCurrentlyInCreation(beanName)) {
 				Assert.state(bf != null, "BeanFactory required for resolving interceptor names");
 				Object next = bf.getBean(beanName);

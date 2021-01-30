@@ -63,7 +63,9 @@ import org.springframework.util.ClassUtils;
  */
 final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializable {
 
-	/** use serialVersionUID from Spring 1.2 for interoperability */
+	/**
+	 * use serialVersionUID from Spring 1.2 for interoperability
+	 */
 	private static final long serialVersionUID = 5531744639992436476L;
 
 
@@ -76,10 +78,14 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 	 * This way, we can also more easily take advantage of minor optimizations in each class.
 	 */
 
-	/** We use a static Log to avoid serialization issues */
+	/**
+	 * We use a static Log to avoid serialization issues
+	 */
 	private static final Log logger = LogFactory.getLog(JdkDynamicAopProxy.class);
 
-	/** Config used to configure this proxy */
+	/**
+	 * Config used to configure this proxy
+	 */
 	private final AdvisedSupport advised;
 
 	/**
@@ -95,9 +101,10 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 
 	/**
 	 * Construct a new JdkDynamicAopProxy for the given AOP configuration.
+	 *
 	 * @param config the AOP configuration as AdvisedSupport object
 	 * @throws AopConfigException if the config is invalid. We try to throw an informative
-	 * exception in this case, rather than let a mysterious failure happen later.
+	 *                            exception in this case, rather than let a mysterious failure happen later.
 	 */
 	public JdkDynamicAopProxy(AdvisedSupport config) throws AopConfigException {
 		Assert.notNull(config, "AdvisedSupport must not be null");
@@ -113,19 +120,30 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 		return getProxy(ClassUtils.getDefaultClassLoader());
 	}
 
+	/**
+	 * 创建代理对象
+	 *
+	 * @param classLoader the class loader to create the proxy with
+	 *                    (or {@code null} for the low-level proxy facility's default)
+	 * @return
+	 */
 	@Override
 	public Object getProxy(@Nullable ClassLoader classLoader) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Creating JDK dynamic proxy: target source is " + this.advised.getTargetSource());
 		}
+		// 获取完整的接口,基于目前类实现的接口，添加接口（目标类所实现的）所实现的特定接口
 		Class<?>[] proxiedInterfaces = AopProxyUtils.completeProxiedInterfaces(this.advised, true);
+		// 如下方法逻辑，当接口中的方法有equals方法获取hashCode方法的时候，就将相应的成员变量标为True
 		findDefinedEqualsAndHashCodeMethods(proxiedInterfaces);
+		// 直接调用JDK中的Proxy下的方法来创建代理对象,请注意这个This(拥有代理相关的配置)
 		return Proxy.newProxyInstance(classLoader, proxiedInterfaces, this);
 	}
 
 	/**
 	 * Finds any {@link #equals} or {@link #hashCode} method that may be defined
 	 * on the supplied set of interfaces.
+	 *
 	 * @param proxiedInterfaces the interfaces to introspect
 	 */
 	private void findDefinedEqualsAndHashCodeMethods(Class<?>[] proxiedInterfaces) {
@@ -165,25 +183,25 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			if (!this.equalsDefined && AopUtils.isEqualsMethod(method)) {
 				// The target does not implement the equals(Object) method itself.
 				return equals(args[0]);
-			}
-			else if (!this.hashCodeDefined && AopUtils.isHashCodeMethod(method)) {
+			} else if (!this.hashCodeDefined && AopUtils.isHashCodeMethod(method)) {
 				// The target does not implement the hashCode() method itself.
 				return hashCode();
-			}
-			else if (method.getDeclaringClass() == DecoratingProxy.class) {
+			} else if (method.getDeclaringClass() == DecoratingProxy.class) {
 				// There is only getDecoratedClass() declared -> dispatch to proxy config.
 				return AopProxyUtils.ultimateTargetClass(this.advised);
-			}
-			else if (!this.advised.opaque && method.getDeclaringClass().isInterface() &&
+			} else if (!this.advised.opaque && method.getDeclaringClass().isInterface() &&
 					method.getDeclaringClass().isAssignableFrom(Advised.class)) {
 				// Service invocations on ProxyConfig with the proxy config...
 				return AopUtils.invokeJoinpointUsingReflection(this.advised, method, args);
 			}
 
 			Object retVal;
-
+			// ====> 当允许暴露代理对象的时候
 			if (this.advised.exposeProxy) {
-				// Make invocation available if necessary.
+				/**
+				 * Make invocation available if necessary.
+				 * 将代理对象设置到 “AopContext”中
+				 */
 				oldProxy = AopContext.setCurrentProxy(proxy);
 				setProxyContext = true;
 			}
@@ -193,7 +211,10 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 			target = targetSource.getTarget();
 			Class<?> targetClass = (target != null ? target.getClass() : null);
 
-			// Get the interception chain for this method.
+			/**
+			 * Get the interception chain for this method.
+			 * 获取到匹配的Advisor列表，並且转换为MethodInterceptor
+			 */
 			List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 
 			// Check whether we have any advice. If we don't, we can fallback on direct
@@ -204,9 +225,11 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// nothing but a reflective operation on the target, and no hot swapping or fancy proxying.
 				Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
 				retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
-			}
-			else {
-				// We need to create a method invocation...
+			} else {
+				/**
+				 * We need to create a method invocation...
+				 * 创建一个MethodInvocation，将所有的Advisor进行合理的组合，实现Aop的效果
+				 */
 				invocation = new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
 				// Proceed to the joinpoint through the interceptor chain.
 				retVal = invocation.proceed();
@@ -221,14 +244,12 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// is type-compatible. Note that we can't help if the target sets
 				// a reference to itself in another returned object.
 				retVal = proxy;
-			}
-			else if (retVal == null && returnType != Void.TYPE && returnType.isPrimitive()) {
+			} else if (retVal == null && returnType != Void.TYPE && returnType.isPrimitive()) {
 				throw new AopInvocationException(
 						"Null return value from advice does not match primitive return type for: " + method);
 			}
 			return retVal;
-		}
-		finally {
+		} finally {
 			if (target != null && !targetSource.isStatic()) {
 				// Must have come from TargetSource.
 				targetSource.releaseTarget(target);
@@ -258,15 +279,13 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 		JdkDynamicAopProxy otherProxy;
 		if (other instanceof JdkDynamicAopProxy) {
 			otherProxy = (JdkDynamicAopProxy) other;
-		}
-		else if (Proxy.isProxyClass(other.getClass())) {
+		} else if (Proxy.isProxyClass(other.getClass())) {
 			InvocationHandler ih = Proxy.getInvocationHandler(other);
 			if (!(ih instanceof JdkDynamicAopProxy)) {
 				return false;
 			}
 			otherProxy = (JdkDynamicAopProxy) ih;
-		}
-		else {
+		} else {
 			// Not a valid comparison...
 			return false;
 		}

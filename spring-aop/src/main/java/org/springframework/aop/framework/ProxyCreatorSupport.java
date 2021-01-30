@@ -72,6 +72,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 	 * Return the AopProxyFactory that this ProxyConfig uses.
 	 */
 	public AopProxyFactory getAopProxyFactory() {
+		// 默认: org.springframework.aop.framework.DefaultAopProxyFactory
 		return this.aopProxyFactory;
 	}
 

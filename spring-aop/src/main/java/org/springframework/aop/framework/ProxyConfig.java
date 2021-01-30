@@ -39,7 +39,7 @@ public class ProxyConfig implements Serializable {
 
 
 	/**
-	 * 标记接口是否直接对目标类进行代理
+	 * 如果该值为true，则proxyFactory将会使用CGLIB对目标对象进行代理，默认值为false
 	 */
 	private boolean proxyTargetClass = false;
 
@@ -84,6 +84,8 @@ public class ProxyConfig implements Serializable {
 
 	/**
 	 * Return whether to proxy the target class directly as well as any interfaces.
+	 *
+	 * 返回是否直接通过接口创建代理对象
 	 */
 	public boolean isProxyTargetClass() {
 		return this.proxyTargetClass;
@@ -170,15 +172,21 @@ public class ProxyConfig implements Serializable {
 
 	/**
 	 * Copy configuration from the other config object.
+	 * 从其他配置对象中复制配置
 	 *
 	 * @param other object to copy configuration from
 	 */
 	public void copyFrom(ProxyConfig other) {
 		Assert.notNull(other, "Other ProxyConfig object must not be null");
+		// 标记接口是否直接对目标类进行代理
 		this.proxyTargetClass = other.proxyTargetClass;
+		// 标记是否对代理进行优化，true：若Bean有接口就直接使用JDK动态代理，没有接口就是用CGLIB
 		this.optimize = other.optimize;
+		// 标记代理对象是否应该被AOP框架通过AopContext以ThreadLocal的形式暴露出去
 		this.exposeProxy = other.exposeProxy;
+		//标记是否需要冻结代理对象，即在代理对象生成之后，是否允许对其进行修改
 		this.frozen = other.frozen;
+		// 标记是否需要阻止通过该配置创建的代理对象转换为Advised类型，  * 默认为false，表示允许转换
 		this.opaque = other.opaque;
 	}
 

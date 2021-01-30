@@ -48,6 +48,9 @@ public interface AdvisorAdapterRegistry {
 	/**
 	 * Return an array of AOP Alliance MethodInterceptors to allow use of the
 	 * given Advisor in an interception-based framework.
+	 *
+	 * 返回AOP Alliance MethodInterceptors数组，以允许在基于拦截的框架中使用给定的Advisor
+	 *
 	 * <p>Don't worry about the pointcut associated with the Advisor,
 	 * if it's a PointcutAdvisor: just return an interceptor.
 	 * @param advisor Advisor to find an interceptor for

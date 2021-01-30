@@ -53,6 +53,13 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 	}
 
 
+	/**
+	 * 适配器模式，将拦截器转换为Advisor
+	 *
+	 * @param adviceObject
+	 * @return
+	 * @throws UnknownAdviceTypeException
+	 */
 	@Override
 	public Advisor wrap(Object adviceObject) throws UnknownAdviceTypeException {
 		if (adviceObject instanceof Advisor) {
@@ -62,10 +69,15 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 			throw new UnknownAdviceTypeException(adviceObject);
 		}
 		Advice advice = (Advice) adviceObject;
+		// =====>>>  org.aopalliance.intercept.Interceptor 继承自Advice
 		if (advice instanceof MethodInterceptor) {
 			// So well-known it doesn't even need an adapter.
 			return new DefaultPointcutAdvisor(advice);
 		}
+		/**
+		 * 适配器模式表现
+		 * 迭代所有的适配器，若适配器能够支持当前的Advice,则将Advice转换为Advisor
+		 */
 		for (AdvisorAdapter adapter : this.adapters) {
 			// Check that it is supported.
 			if (adapter.supportsAdvice(advice)) {
@@ -75,21 +87,34 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		throw new UnknownAdviceTypeException(advice);
 	}
 
+	/**
+	 * 返回AOP Alliance MethodInterceptors数组，以允许在基于拦截的框架中使用给定的Advisor
+	 *
+	 * @param advisor Advisor to find an interceptor for
+	 * @return
+	 * @throws UnknownAdviceTypeException
+	 */
 	@Override
 	public MethodInterceptor[] getInterceptors(Advisor advisor) throws UnknownAdviceTypeException {
 		List<MethodInterceptor> interceptors = new ArrayList<>(3);
 		Advice advice = advisor.getAdvice();
+		// 如果当前的advice的类型是MethodInterceptor
 		if (advice instanceof MethodInterceptor) {
+			// 直接添加到列表中
 			interceptors.add((MethodInterceptor) advice);
 		}
+		// 遍历所有的适配器(适配器模式的应用)
 		for (AdvisorAdapter adapter : this.adapters) {
+			// 如果当前的适配器能够支持这种类型的Advice
 			if (adapter.supportsAdvice(advice)) {
+				// 那就使用适配器，将Advisor转换为MethodInterceptor
 				interceptors.add(adapter.getInterceptor(advisor));
 			}
 		}
 		if (interceptors.isEmpty()) {
 			throw new UnknownAdviceTypeException(advisor.getAdvice());
 		}
+		// 转换为数组返回
 		return interceptors.toArray(new MethodInterceptor[0]);
 	}
 

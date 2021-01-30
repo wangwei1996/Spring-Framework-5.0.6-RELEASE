@@ -47,6 +47,15 @@ import org.springframework.lang.Nullable;
 @SuppressWarnings("serial")
 public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializable {
 
+	/**
+	 * 根据配置，获取当前调用方法所匹配的Advisor并且将匹配的Advisor转换为MethodInterceptor
+	 *
+	 * @param config      the AOP configuration in the form of an Advised object
+	 * @param method      the proxied method
+	 * @param targetClass the target class (may be {@code null} to indicate a proxy without
+	 *                    target object, in which case the method's declaring class is the next best option)
+	 * @return
+	 */
 	@Override
 	public List<Object> getInterceptorsAndDynamicInterceptionAdvice(
 			Advised config, Method method, @Nullable Class<?> targetClass) {
@@ -62,9 +71,12 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 			if (advisor instanceof PointcutAdvisor) {
 				// Add it conditionally.
 				PointcutAdvisor pointcutAdvisor = (PointcutAdvisor) advisor;
+				// 如果Advisor已经提前过滤了 或者 当前的Advisor匹配当前的目标类
 				if (config.isPreFiltered() || pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)) {
+					// 使用适配器模式，将Advisor转换为MethodInterceptor
 					MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
 					MethodMatcher mm = pointcutAdvisor.getPointcut().getMethodMatcher();
+					// ====>>>>>>>  当切面是和当前方法匹配的
 					if (MethodMatchers.matches(mm, method, actualClass, hasIntroductions)) {
 						if (mm.isRuntime()) {
 							// Creating a new object instance in the getInterceptors() method
@@ -72,21 +84,18 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 							for (MethodInterceptor interceptor : interceptors) {
 								interceptorList.add(new InterceptorAndDynamicMethodMatcher(interceptor, mm));
 							}
-						}
-						else {
+						} else {
 							interceptorList.addAll(Arrays.asList(interceptors));
 						}
 					}
 				}
-			}
-			else if (advisor instanceof IntroductionAdvisor) {
+			} else if (advisor instanceof IntroductionAdvisor) {
 				IntroductionAdvisor ia = (IntroductionAdvisor) advisor;
 				if (config.isPreFiltered() || ia.getClassFilter().matches(actualClass)) {
 					Interceptor[] interceptors = registry.getInterceptors(advisor);
 					interceptorList.addAll(Arrays.asList(interceptors));
 				}
-			}
-			else {
+			} else {
 				Interceptor[] interceptors = registry.getInterceptors(advisor);
 				interceptorList.addAll(Arrays.asList(interceptors));
 			}

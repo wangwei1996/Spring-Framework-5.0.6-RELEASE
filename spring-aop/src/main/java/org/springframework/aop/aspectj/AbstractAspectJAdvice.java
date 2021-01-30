@@ -443,7 +443,6 @@ public abstract class AbstractAspectJAdvice implements Advice, AspectJPrecedence
 	}
 
 	/**
-	 *
 	 * @param numArgumentsExpectingToBind
 	 */
 	private void bindArgumentsByName(int numArgumentsExpectingToBind) {
@@ -622,6 +621,8 @@ public abstract class AbstractAspectJAdvice implements Advice, AspectJPrecedence
 
 	/**
 	 * Invoke the advice method.
+	 * <p>
+	 * 执行切面方法
 	 *
 	 * @param jpMatch     the JoinPointMatch that matched this execution join point
 	 * @param returnValue the return value from the method execution (may be null)

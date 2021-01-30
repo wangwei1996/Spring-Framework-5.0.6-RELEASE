@@ -60,9 +60,10 @@ public class AspectJAfterThrowingAdvice extends AbstractAspectJAdvice
 	public Object invoke(MethodInvocation mi) throws Throwable {
 		try {
 			return mi.proceed();
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
+			// 判断是否需要执行afterThrowing切面方法
 			if (shouldInvokeOnThrowing(ex)) {
+				// 执行切面方法
 				invokeAdviceMethod(getJoinPointMatch(), null, ex);
 			}
 			throw ex;

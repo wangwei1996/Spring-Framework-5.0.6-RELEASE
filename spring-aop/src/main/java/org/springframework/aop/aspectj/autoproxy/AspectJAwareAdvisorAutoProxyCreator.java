@@ -88,6 +88,8 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 	 * Adds an {@link ExposeInvocationInterceptor} to the beginning of the advice chain.
 	 * These additional advices are needed when using AspectJ expression pointcuts
 	 * and when using AspectJ-style advice.
+	 * <p>
+	 * 添加ExposeInvocationInterceptor到Advice链的头部，这个额外的advice是必要的，当使用AspectJ表达式的切点的时候或者使用AspectJ风格的Advice
 	 */
 	@Override
 	protected void extendAdvisors(List<Advisor> candidateAdvisors) {

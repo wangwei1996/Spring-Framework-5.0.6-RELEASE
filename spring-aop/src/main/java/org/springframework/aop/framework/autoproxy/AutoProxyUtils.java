@@ -26,8 +26,8 @@ import org.springframework.lang.Nullable;
  * Mainly for internal use within the framework.
  *
  * @author Juergen Hoeller
- * @since 2.0.3
  * @see AbstractAutoProxyCreator
+ * @since 2.0.3
  */
 public abstract class AutoProxyUtils {
 
@@ -36,9 +36,12 @@ public abstract class AutoProxyUtils {
 	 * to be proxied with its target class (in case of it getting proxied in the first
 	 * place). The value is {@code Boolean.TRUE} or {@code Boolean.FALSE}.
 	 * <p>Proxy factories can set this attribute if they built a target class proxy
-	 * for a specific bean, and want to enforce that bean can always be cast
+	 * for a specific bean, and want to enforce（执行） that bean can always be cast
 	 * to its target class (even if AOP advices get applied through auto-proxying).
+	 *
 	 * @see #shouldProxyTargetClass
+	 * <p>
+	 * BeanDefinition属性表明给定的Bean是否支持使用目标类型进行创建代理类型对象，
 	 */
 	public static final String PRESERVE_TARGET_CLASS_ATTRIBUTE =
 			Conventions.getQualifiedAttributeName(AutoProxyUtils.class, "preserveTargetClass");
@@ -47,8 +50,10 @@ public abstract class AutoProxyUtils {
 	 * Bean definition attribute that indicates the original target class of an
 	 * auto-proxied bean, e.g. to be used for the introspection of annotations
 	 * on the target class behind an interface-based proxy.
-	 * @since 4.2.3
+	 * Bean定义属性，指示自动代理Bean的原始目标类，例如，用于在基于接口的代理后面的目标类上内省注释。
+	 *
 	 * @see #determineTargetClass
+	 * @since 4.2.3
 	 */
 	public static final String ORIGINAL_TARGET_CLASS_ATTRIBUTE =
 			Conventions.getQualifiedAttributeName(AutoProxyUtils.class, "originalTargetClass");
@@ -58,9 +63,10 @@ public abstract class AutoProxyUtils {
 	 * Determine whether the given bean should be proxied with its target
 	 * class rather than its interfaces. Checks the
 	 * {@link #PRESERVE_TARGET_CLASS_ATTRIBUTE "preserveTargetClass" attribute}
-	 * of the corresponding bean definition.
+	 * of the corresponding（相应的） bean definition.
+	 * 确定给定的Bean创建代理对象时是基于目标类还是他的接口，校验相应的BeanDefinition的“preserveTargetClass”属性即可
 	 * @param beanFactory the containing ConfigurableListableBeanFactory
-	 * @param beanName the name of the bean
+	 * @param beanName    the name of the bean
 	 * @return whether the given bean should be proxied with its target class
 	 */
 	public static boolean shouldProxyTargetClass(ConfigurableListableBeanFactory beanFactory, @Nullable String beanName) {
@@ -74,11 +80,12 @@ public abstract class AutoProxyUtils {
 	/**
 	 * Determine the original target class for the specified bean, if possible,
 	 * otherwise falling back to a regular {@code getType} lookup.
+	 *
 	 * @param beanFactory the containing ConfigurableListableBeanFactory
-	 * @param beanName the name of the bean
+	 * @param beanName    the name of the bean
 	 * @return the original target class as stored in the bean definition, if any
-	 * @since 4.2.3
 	 * @see org.springframework.beans.factory.BeanFactory#getType(String)
+	 * @since 4.2.3
 	 */
 	@Nullable
 	public static Class<?> determineTargetClass(ConfigurableListableBeanFactory beanFactory, @Nullable String beanName) {
@@ -97,13 +104,17 @@ public abstract class AutoProxyUtils {
 
 	/**
 	 * Expose the given target class for the specified bean, if possible.
+	 * 如果可能的话，为指定的bean公开给定的目标类
+	 *
 	 * @param beanFactory the containing ConfigurableListableBeanFactory
-	 * @param beanName the name of the bean
+	 * @param beanName    the name of the bean
 	 * @param targetClass the corresponding target class
 	 * @since 4.2.3
+	 * <p>
+	 * 给BeanDefinition设置ORIGINAL_TARGET_CLASS_ATTRIBUTE属性，用于?
 	 */
 	static void exposeTargetClass(ConfigurableListableBeanFactory beanFactory, @Nullable String beanName,
-			Class<?> targetClass) {
+								  Class<?> targetClass) {
 
 		if (beanName != null && beanFactory.containsBeanDefinition(beanName)) {
 			beanFactory.getMergedBeanDefinition(beanName).setAttribute(ORIGINAL_TARGET_CLASS_ATTRIBUTE, targetClass);
