@@ -51,3 +51,4 @@ The Spring Framework is released under version 2.0 of the
 1. 学习框架的思路
    + 先了解整体代码的各个模块是在做什么事情，然后再结合我们我们想要了解的重点内容去研究相关的细节
 2. 要想知道代码是在什么时候调用的，最好的方式就是打断点，通过调用栈来追踪
+3. 阅读代码不能纠结一处，不能纠结每一行代码，往往在后面方能理解前面的代码的含义（如： org.springframework.aop.interceptor.ExposeInvocationInterceptor）
