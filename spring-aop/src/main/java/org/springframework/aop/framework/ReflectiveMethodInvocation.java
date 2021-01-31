@@ -163,6 +163,8 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	 * 如何保证多个Aspect的调用顺序？
 	 * (https://gitee.com/WeiLU/Spring-Framework-v5.0.6.release/blob/master/spring-note/015.AOP%E5%BC%95%E5%85%A5.md)
 	 * ----> 多个Aspect，也会先转换为Advisor类型，再进行处理
+	 * <p>
+	 * JDK动态代理有使用
 	 */
 	@Override
 	@Nullable
