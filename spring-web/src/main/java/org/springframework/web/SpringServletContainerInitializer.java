@@ -109,6 +109,12 @@ import org.springframework.util.ReflectionUtils;
  * @see WebApplicationInitializer
  * @since 3.1
  */
+
+/**
+ * @HandlesTypes 注解的作用： 将注解指定的Class对象作为参数传递到onStartup（ServletContainerInitializer）方法中
+ * <p>
+ * 为什么实现javax.servlet.ServletContainerInitializer接口： spring-note/023.SpringMVC源码学习.md
+ */
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
