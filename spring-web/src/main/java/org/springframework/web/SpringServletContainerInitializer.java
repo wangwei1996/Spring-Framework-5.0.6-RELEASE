@@ -120,16 +120,25 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 
 	/**
 	 * Delegate the {@code ServletContext} to any {@link WebApplicationInitializer}
-	 * implementations present on the application classpath.
+	 * implementations present on the application classpath.（将ServletContext委托给应用程序类路径上的任何WebApplicationInitializer实现。）
+	 *
 	 * <p>Because this class declares @{@code HandlesTypes(WebApplicationInitializer.class)},
 	 * Servlet 3.0+ containers will automatically scan the classpath for implementations
 	 * of Spring's {@code WebApplicationInitializer} interface and provide the set of all
 	 * such types to the {@code webAppInitializerClasses} parameter of this method.
+	 * <p>
+	 * 因为这个类声明了@HandlesTypes(WebApplicationInitializer.class)，所以Servlet3.0+的容器将自动扫描类路径上的Spring中的WebApplicationInitializer实现
+	 * 并且提供所有的WebApplicationInitializer实现的set集合作为这个方法的参数
+	 *
 	 * <p>If no {@code WebApplicationInitializer} implementations are found on the classpath,
-	 * this method is effectively a no-op. An INFO-level log message will be issued notifying
-	 * the user that the {@code ServletContainerInitializer} has indeed been invoked but that
+	 * this method is effectively a no-op. An INFO-level log message will be issued（v. 发布；（正式）发给；将……诉诸法律；出版；发行（新的一批）；流出；由……产生（issue 的过去式及过去分词））
+	 * notifying the user that the {@code ServletContainerInitializer} has indeed been invoked but that
 	 * no {@code WebApplicationInitializer} implementations were found.
-	 * <p>Assuming that one or more {@code WebApplicationInitializer} types are detected,
+	 * 如果在类路径上没有WebApplicationInitializer的实现，则这个方法实际上是无效的，一个info级别的日志将会被打印出来去提醒用户
+	 * ServletContainerInitializer需要被调用但是没有WebApplicationInitializer的实现
+	 *
+	 * <p>Assuming(vi. 假定；设想；承担；采取（assume的现在分词）) that one or more
+	 * {@code WebApplicationInitializer} types are detected(v. （尤指用特殊方法）发现，识别),
 	 * they will be instantiated (and <em>sorted</em> if the @{@link
 	 * org.springframework.core.annotation.Order @Order} annotation is present or
 	 * the {@link org.springframework.core.Ordered Ordered} interface has been
@@ -137,7 +146,11 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	 * method will be invoked on each instance, delegating the {@code ServletContext} such
 	 * that each instance may register and configure servlets such as Spring's
 	 * {@code DispatcherServlet}, listeners such as Spring's {@code ContextLoaderListener},
-	 * or any other Servlet API componentry such as filters.
+	 * or any other Servlet API componentry（n.元件部分） such as filters.
+	 * <p>
+	 * 假设有一个或者多个WebApplicationInitializer的实现者被检测到了，如果@Order注解存在或者实现了Ordered接口，那么将先排序再进行实例化。
+	 * 然后逐个调用WebApplicationInitializer实现者的onStartUp方法，每一个实例或许注册和配置servlets（例如Spring中的DispatcherServlet）,
+	 * 监听器（例如Spring中的ContextLoaderListener）或者任何的其他Servlet 功能部件,例如filter
 	 *
 	 * @param webAppInitializerClasses all implementations of
 	 *                                 {@link WebApplicationInitializer} found on the application classpath
@@ -149,15 +162,20 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
 			throws ServletException {
 
+		// 声明容器，存放需要调用onStartUp方法的WebApplicationInitializer的实现者
 		List<WebApplicationInitializer> initializers = new LinkedList<>();
 
+		// 当类路径中存在WebApplicationInitializer（注意，是Class类型的对象）
 		if (webAppInitializerClasses != null) {
+			// 遍历所有的WebApplicationInitializer的实现者
 			for (Class<?> waiClass : webAppInitializerClasses) {
-				// Be defensive: Some servlet containers provide us with invalid classes,
-				// no matter what @HandlesTypes says...
+				// Be defensive（adj. 自卫的；防御用的 n. 防御；守势）: Some servlet containers provide us with invalid classes,
+				// no matter （no matter 不管）what @HandlesTypes says...
+				//类不能是接口，不能是抽象类并且类是继承自WebApplicationInitializer
 				if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
 						WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
 					try {
+						// 将符合条件的类放到容器中
 						initializers.add((WebApplicationInitializer)
 								ReflectionUtils.accessibleConstructor(waiClass).newInstance());
 					} catch (Throwable ex) {
@@ -167,13 +185,16 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 			}
 		}
 
+		// 当类路径下没有WebApplicationInitializer的实现者，则先打印日志后直接返回
 		if (initializers.isEmpty()) {
 			servletContext.log("No Spring WebApplicationInitializer types detected on classpath");
 			return;
 		}
 
 		servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
+		// 对WebApplicationInitializer的实现者进行排序
 		AnnotationAwareOrderComparator.sort(initializers);
+		// 遍历WebApplicationInitializer实现者的集合，逐个调用他们的onStartUp方法
 		for (WebApplicationInitializer initializer : initializers) {
 			initializer.onStartup(servletContext);
 		}

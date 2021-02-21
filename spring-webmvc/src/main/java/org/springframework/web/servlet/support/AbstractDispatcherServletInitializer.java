@@ -59,28 +59,38 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+		// 调用父类的onStartUp方法
 		super.onStartup(servletContext);
+		// 注册DispatcherServlet
 		registerDispatcherServlet(servletContext);
 	}
 
 	/**
-	 * Register a {@link DispatcherServlet} against the given servlet context.
+	 * Register a {@link DispatcherServlet} against（反对，违反，以……为背景；参照，和……相比） the given servlet context.
 	 * <p>This method will create a {@code DispatcherServlet} with the name returned by
 	 * {@link #getServletName()}, initializing it with the application context returned
 	 * from {@link #createServletApplicationContext()}, and mapping it to the patterns
 	 * returned from {@link #getServletMappings()}.
+	 * <p>
+	 * 以指定的servlet context为参照注册DispatcherServlet，这个方法将会创建一个以getServletName方法返回的值为名字的DispatcherServlet
+	 * 使用createServletApplicationContext返回的容器作为ApplicationContext,并且对getServletMappings返回的路径的集合进行映射
+	 *
 	 * <p>Further customization can be achieved by overriding {@link
 	 * #customizeRegistration(ServletRegistration.Dynamic)} or
 	 * {@link #createDispatcherServlet(WebApplicationContext)}.
+	 *
 	 * @param servletContext the context to register the servlet against
 	 */
 	protected void registerDispatcherServlet(ServletContext servletContext) {
+		// 获取DispatcherServlet的名字
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		// 模板方法createServletApplicationContext，创建Servlet应用上下文
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
+		// 创建DispatcherServlet,请注意，这里操作的是ServletApplicationContext
 		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
@@ -91,6 +101,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 					"Check if there is another servlet registered under the same name.");
 		}
 
+		// 将DispatcherServlet注册到ServletContext中
 		registration.setLoadOnStartup(1);
 		registration.addMapping(getServletMappings());
 		registration.setAsyncSupported(isAsyncSupported());
@@ -102,12 +113,14 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 			}
 		}
 
+		// 空函数，由开发者自行定义，见方法注释
 		customizeRegistration(registration);
 	}
 
 	/**
 	 * Return the name under which the {@link DispatcherServlet} will be registered.
 	 * Defaults to {@link #DEFAULT_SERVLET_NAME}.
+	 *
 	 * @see #registerDispatcherServlet(ServletContext)
 	 */
 	protected String getServletName() {
@@ -120,6 +133,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	 * {@link DispatcherServlet#DispatcherServlet(WebApplicationContext)}. As such,
 	 * it typically contains controllers, view resolvers, locale resolvers, and other
 	 * web-related beans.
+	 *
 	 * @see #registerDispatcherServlet(ServletContext)
 	 */
 	protected abstract WebApplicationContext createServletApplicationContext();
@@ -137,10 +151,11 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	/**
 	 * Specify application context initializers to be applied to the servlet-specific
 	 * application context that the {@code DispatcherServlet} is being created with.
-	 * @since 4.2
+	 *
 	 * @see #createServletApplicationContext()
 	 * @see DispatcherServlet#setContextInitializers
 	 * @see #getRootApplicationContextInitializers()
+	 * @since 4.2
 	 */
 	@Nullable
 	protected ApplicationContextInitializer<?>[] getServletApplicationContextInitializers() {
@@ -150,12 +165,14 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	/**
 	 * Specify the servlet mapping(s) for the {@code DispatcherServlet} &mdash;
 	 * for example {@code "/"}, {@code "/app"}, etc.
+	 *
 	 * @see #registerDispatcherServlet(ServletContext)
 	 */
 	protected abstract String[] getServletMappings();
 
 	/**
 	 * Specify filters to add and map to the {@code DispatcherServlet}.
+	 *
 	 * @return an array of filters or {@code null}
 	 * @see #registerServletFilter(ServletContext, Filter)
 	 */
@@ -177,8 +194,9 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	 * </ul>
 	 * <p>If the above defaults are not suitable or insufficient, override this
 	 * method and register filters directly with the {@code ServletContext}.
+	 *
 	 * @param servletContext the servlet context to register filters with
-	 * @param filter the filter to be registered
+	 * @param filter         the filter to be registered
 	 * @return the filter registration
 	 */
 	protected FilterRegistration.Dynamic registerServletFilter(ServletContext servletContext, Filter filter) {
@@ -220,6 +238,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	/**
 	 * Optionally perform further registration customization once
 	 * {@link #registerDispatcherServlet(ServletContext)} has completed.
+	 *
 	 * @param registration the {@code DispatcherServlet} registration to be customized
 	 * @see #registerDispatcherServlet(ServletContext)
 	 */

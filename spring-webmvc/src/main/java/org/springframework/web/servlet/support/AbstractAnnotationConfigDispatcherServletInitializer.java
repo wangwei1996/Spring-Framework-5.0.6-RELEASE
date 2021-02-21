@@ -28,14 +28,19 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
  * <p>Implementations are required to implement:
  * <ul>
  * <li>{@link #getRootConfigClasses()} -- for "root" application context (non-web
- * infrastructure) configuration.
+ * infrastructure（n. 基础设施；公共建设；下部构造）) configuration.
  * <li>{@link #getServletConfigClasses()} -- for {@code DispatcherServlet}
  * application context (Spring MVC infrastructure) configuration.
  * </ul>
  *
- * <p>If an application context hierarchy is not required, applications may
+ * <p>If an application context hierarchy(n. 层级；等级制度) is not required, applications may
  * return all configuration via {@link #getRootConfigClasses()} and return
  * {@code null} from {@link #getServletConfigClasses()}.
+ * <p>
+ * 如果不需要分层，则getServletConfigClasses方法返回null即可
+ * <p>
+ * <p>
+ * Spring MVC注解方法
  *
  * @author Arjen Poutsma
  * @author Chris Beams
@@ -54,12 +59,12 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	@Nullable
 	protected WebApplicationContext createRootApplicationContext() {
 		Class<?>[] configClasses = getRootConfigClasses();
+		// 判断配置类是否为空，不为空则创建AnnotationConfigWebApplicationContext,反之返回null
 		if (!ObjectUtils.isEmpty(configClasses)) {
 			AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
 			context.register(configClasses);
 			return context;
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
@@ -82,6 +87,7 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	/**
 	 * Specify {@code @Configuration} and/or {@code @Component} classes for the
 	 * {@linkplain #createRootApplicationContext() root application context}.
+	 *
 	 * @return the configuration for the root application context, or {@code null}
 	 * if creation and registration of a root context is not desired
 	 */
@@ -91,6 +97,7 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	/**
 	 * Specify {@code @Configuration} and/or {@code @Component} classes for the
 	 * {@linkplain #createServletApplicationContext() Servlet application context}.
+	 *
 	 * @return the configuration for the Servlet application context, or
 	 * {@code null} if all configuration is specified through root config classes.
 	 */

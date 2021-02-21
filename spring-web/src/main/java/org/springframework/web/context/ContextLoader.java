@@ -267,6 +267,7 @@ public class ContextLoader {
 	 * @see #CONFIG_LOCATION_PARAM
 	 */
 	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
+		// 当ServletContext中有“WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE”属性的时候，则说明重复初始化了，异常抛出
 		if (servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE) != null) {
 			throw new IllegalStateException(
 					"Cannot initialize context because there is already a root application context present - " +
@@ -281,9 +282,14 @@ public class ContextLoader {
 		long startTime = System.currentTimeMillis();
 
 		try {
-			// Store context in local instance variable, to guarantee that
-			// it is available on ServletContext shutdown.
+			/**
+			 * Store context in local instance variable, to guarantee(vt. 保证；担保) that it is available on ServletContext shutdown.
+			 *
+			 * 当context为null的时候才会再去创建WebApplicationContext(这里是RootWebApplicationContext),
+			 * 这个context赋值是在注册ContextLoaderListener的时候(org.springframework.web.context.AbstractContextLoaderInitializer#registerContextLoaderListener(javax.servlet.ServletContext))
+			 */
 			if (this.context == null) {
+				// 当context为null,则创建一个RootWebApplicationContext
 				this.context = createWebApplicationContext(servletContext);
 			}
 			if (this.context instanceof ConfigurableWebApplicationContext) {
@@ -331,13 +337,15 @@ public class ContextLoader {
 	}
 
 	/**
-	 * Instantiate the root WebApplicationContext for this loader, either the
+	 * Instantiate(实例化) the root WebApplicationContext for this loader, either the
 	 * default context class or a custom context class if specified.
 	 * <p>This implementation expects custom contexts to implement the
 	 * {@link ConfigurableWebApplicationContext} interface.
 	 * Can be overridden in subclasses.
 	 * <p>In addition, {@link #customizeContext} gets called prior to refreshing the
-	 * context, allowing subclasses to perform custom modifications to the context.
+	 * context, allowing subclasses to perform custom modifications(修改) to the context.
+	 * <p>
+	 * 通过默认的Class或者自定义的Class来为这个ContextLoader实例化一个RootWebApplicationContext，
 	 *
 	 * @param sc current servlet context
 	 * @return the root WebApplicationContext
@@ -362,6 +370,7 @@ public class ContextLoader {
 	 * @see org.springframework.web.context.support.XmlWebApplicationContext
 	 */
 	protected Class<?> determineContextClass(ServletContext servletContext) {
+		// 获取Servlet的初始化参数(CONTEXT_CLASS_PARAM)
 		String contextClassName = servletContext.getInitParameter(CONTEXT_CLASS_PARAM);
 		if (contextClassName != null) {
 			try {
