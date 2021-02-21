@@ -370,7 +370,7 @@ public class ContextLoader {
 	 * @see org.springframework.web.context.support.XmlWebApplicationContext
 	 */
 	protected Class<?> determineContextClass(ServletContext servletContext) {
-		// 获取Servlet的初始化参数(CONTEXT_CLASS_PARAM)
+		// 获取ServletContext的初始化参数(CONTEXT_CLASS_PARAM)
 		String contextClassName = servletContext.getInitParameter(CONTEXT_CLASS_PARAM);
 		if (contextClassName != null) {
 			try {
