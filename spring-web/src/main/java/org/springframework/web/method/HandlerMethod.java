@@ -318,6 +318,8 @@ public class HandlerMethod {
 	/**
 	 * If the provided instance contains a bean name rather than an object instance,
 	 * the bean name is resolved before a {@link HandlerMethod} is created and returned.
+	 * <p>
+	 * 这里返回的HandlerMethod的handler不能是String类型，如果是String类型(即是处理器的Bean名称)，则需要转换为处理器实例
 	 */
 	public HandlerMethod createWithResolvedBean() {
 		Object handler = this.bean;

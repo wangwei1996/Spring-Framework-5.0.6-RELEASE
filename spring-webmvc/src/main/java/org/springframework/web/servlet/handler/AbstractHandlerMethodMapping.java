@@ -385,6 +385,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	/**
 	 * Look up the best-matching handler method for the current request.
 	 * If multiple matches are found, the best match is selected.
+	 * <p>
+	 * 为当前的请求寻找最合适的处理器方法，如果找到了多个，则返回最匹配的那一个
 	 *
 	 * @param lookupPath mapping lookup path within the current servlet mapping
 	 * @param request    the current request
@@ -392,6 +394,11 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @see #handleMatch(Object, String, HttpServletRequest)
 	 * @see #handleNoMatch(Set, String, HttpServletRequest)
 	 * 通过request来获取“最合适的”处理器
+	 * 1. 首先通过URL来从缓存中查找
+	 * 2. 如果URL中查询不到，则遍历所有的映射关系去寻找
+	 * 3. 找到匹配的了
+	 * 4. 对匹配到的RequestMappingInfo进行排序
+	 * 5. 获取到第一个，即第一个是最佳匹配
 	 */
 	@Nullable
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {

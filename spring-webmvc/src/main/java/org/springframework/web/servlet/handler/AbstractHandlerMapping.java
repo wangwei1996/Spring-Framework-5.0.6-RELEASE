@@ -348,7 +348,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
-		// 调用org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#getHandlerInternal方法来获取处理器()
+		// 调用org.springframework.web.servlet.handler.AbstractHandlerMethodMapping#getHandlerInternal方法来获取处理器方法(org.springframework.web.method.HandlerMethod)
 		Object handler = getHandlerInternal(request);
 		// 如果获取不到HandlerMethod,则使用默认的HandlerMethod
 		if (handler == null) {

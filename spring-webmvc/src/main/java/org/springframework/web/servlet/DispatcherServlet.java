@@ -358,6 +358,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 	/**
 	 * List of HandlerMappings used by this servlet
+	 * 类似于: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 	 */
 	@Nullable
 	private List<HandlerMapping> handlerMappings;
@@ -1069,14 +1070,14 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
-				// 核对一下，是否是文件上传的request，如果是文件上传，则会对request的类型进行转换
+				// 获取处理过后的Request: 核对一下，是否是文件上传的request，如果是文件上传，则会对request的类型进行转换
 				processedRequest = checkMultipart(request);
 				// 是否经过转换,因为如果是文件上传的话，则会通过文件上传解析器来对request进行处理，返回一个新的request(类型取决于文件上传解析器)
 				multipartRequestParsed = (processedRequest != request);
 
 				/*
 				 * Determine handler for the current request.
-				 * 从处理器映射器(HandlerMapping)中获取执行链
+				 * 从处理器映射器(HandlerMapping)中获取执行链,执行链包括处理器方法和对应的拦截器
 				 */
 				mappedHandler = getHandler(processedRequest);
 				// 如果查询不到执行链，根据配置是抛出异常或返回请求者404
@@ -1084,17 +1085,16 @@ public class DispatcherServlet extends FrameworkServlet {
 					noHandlerFound(processedRequest, response);
 					return;
 				}
-
 				/**
 				 *Determine handler adapter for the current request.
 				 * 获取处理器适配器
 				 */
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
-
 				/*
 				 * Process last-modified header, if supported by the handler.
 				 * 处理get/head请求的Last-Modified?
 				 */
+				// 获取请求方式
 				String method = request.getMethod();
 				boolean isGet = "GET".equals(method);
 				if (isGet || "HEAD".equals(method)) {
@@ -1313,13 +1313,17 @@ public class DispatcherServlet extends FrameworkServlet {
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		// 如果处理器映射器是null，则没有数据，直接返回null
 		if (this.handlerMappings != null) {
-			// 遍历每一个处理器映射器,从每一个处理器映射器中获取执行链。若获取到了，则直接返回；反之，返回null。
+			/**
+			 * 遍历每一个处理器映射器,从每一个处理器映射器中获取执行链。若获取到了，则直接返回；反之，返回null。
+			 * 处理器映射器：
+			 *  例如最常用的: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+			 */
 			for (HandlerMapping hm : this.handlerMappings) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(
 							"Testing handler map [" + hm + "] in DispatcherServlet with name '" + getServletName() + "'");
 				}
-				// 调用org.springframework.web.servlet.handler.AbstractHandlerMapping#getHandler的方法去获取执行链
+				// 调用处理器映射器的org.springframework.web.servlet.HandlerMapping.getHandler方法来获取处理器(不同的映射器getHandler方法逻辑不同)
 				HandlerExecutionChain handler = hm.getHandler(request);
 				// 找到了，则直接返回
 				if (handler != null) {
@@ -1360,7 +1364,10 @@ public class DispatcherServlet extends FrameworkServlet {
 	protected HandlerAdapter getHandlerAdapter(Object handler) throws ServletException {
 		// 判断DispatcherServlet中的处理器适配器是否为null
 		if (this.handlerAdapters != null) {
-			// 遍历处理器适配器
+			/**
+			 * 遍历处理器适配器
+			 * 例如: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
+			 */
 			for (HandlerAdapter ha : this.handlerAdapters) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Testing handler adapter [" + ha + "]");

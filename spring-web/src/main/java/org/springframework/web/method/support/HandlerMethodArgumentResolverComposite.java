@@ -120,7 +120,7 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	@Nullable
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
-       // 获取参数解析器
+         // 获取参数解析器
 		HandlerMethodArgumentResolver resolver = getArgumentResolver(parameter);
 		// 如果参数解析器为null，则抛出异常
 		if (resolver == null) {
