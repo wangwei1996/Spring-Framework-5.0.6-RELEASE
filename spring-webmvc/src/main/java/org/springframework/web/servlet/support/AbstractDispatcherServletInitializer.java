@@ -86,7 +86,8 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
-		// 模板方法createServletApplicationContext，创建Servlet应用上下文
+		// 模板方法createServletApplicationContext，创建Servlet应用上下文，见spring-note/pics/mvc-context-hierarchy.png，
+		// 与之对应的是RootWebApplicationContext
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 

@@ -123,6 +123,11 @@ public abstract class AopUtils {
 	 * Select an invocable method on the target type: either the given method itself
 	 * if actually exposed on the target type, or otherwise a corresponding method
 	 * on one of the target type's interfaces or on the target type itself.
+	 * <p>
+	 * 在目標類型中選擇一个可以调用的方法：
+	 * * 1. 该方法就是参数本身
+	 * * 2. 该方法是接口中的方法
+	 * * 3. 该方法是目标类上的一个方法
 	 *
 	 * @param method     the method to check
 	 * @param targetType the target type to search methods on (typically an AOP proxy)
@@ -136,7 +141,16 @@ public abstract class AopUtils {
 		if (targetType == null) {
 			return method;
 		}
+		// 从目标类型中获取对应的方法
 		Method methodToUse = MethodIntrospector.selectInvocableMethod(method, targetType);
+		/**
+		 * 校验方法是否可以使用, 如果同时满足如下三个条件，则为不可用方法
+		 * 1. 方法是私有化的
+		 * 2. 方法是成员方法
+		 * 3. 目标类型是Spring内部产生的代理类
+		 * 即如果方法是私有化的成员方法，并且类型是Spring内部产生的代理类型，则将方法视为不可用
+		 *
+		 */
 		if (Modifier.isPrivate(methodToUse.getModifiers()) && !Modifier.isStatic(methodToUse.getModifiers()) &&
 				SpringProxy.class.isAssignableFrom(targetType)) {
 			throw new IllegalStateException(String.format(
@@ -144,6 +158,7 @@ public abstract class AopUtils {
 							"be delegated to target bean. Switch its visibility to package or protected.",
 					method.getName(), method.getDeclaringClass().getSimpleName()));
 		}
+		// 方法经过校验，方法可用
 		return methodToUse;
 	}
 

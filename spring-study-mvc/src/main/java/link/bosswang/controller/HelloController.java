@@ -12,7 +12,7 @@ public class HelloController {
 
 	@RequestMapping(value = "/sayHello", method = RequestMethod.GET)
 	@ResponseBody
-	public HelloDto<String> sayHello() {
+	public static HelloDto<String> sayHello() {
 
 		System.out.println("Hello Controller say Hello");
 
@@ -21,7 +21,7 @@ public class HelloController {
 	}
 
 	@RequestMapping(value = "/hello", method = RequestMethod.GET)
-	public String hello() {
+	public static String hello() {
 		return "Hello";
 	}
 

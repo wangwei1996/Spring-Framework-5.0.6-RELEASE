@@ -159,7 +159,7 @@ public class ContextLoader {
 
 	/**
 	 * The 'current' WebApplicationContext, if the ContextLoader class is
-	 * deployed in the web app ClassLoader itself.
+	 * deployed in the web app ClassLoader itself. 如果ContextLoader类部署在web应用程序类加载器本身中
 	 */
 	@Nullable
 	private static volatile WebApplicationContext currentContext;
@@ -167,6 +167,7 @@ public class ContextLoader {
 
 	/**
 	 * The root WebApplicationContext instance that this loader manages.
+	 * 这个是RootWebApplicationContext
 	 */
 	@Nullable
 	private WebApplicationContext context;
@@ -259,6 +260,9 @@ public class ContextLoader {
 	 * using the application context provided at construction time, or creating a new one
 	 * according to the "{@link #CONTEXT_CLASS_PARAM contextClass}" and
 	 * "{@link #CONFIG_LOCATION_PARAM contextConfigLocation}" context-params.
+	 * <p>
+	 * 为给定的ServletContext初始化一个Spring的WebApplicationContext，使用给定的ApplicationContext或者根据CONTEXT_CLASS_PARAM
+	 * 和CONFIG_LOCATION_PARAM来创建一个新的
 	 *
 	 * @param servletContext current servlet context
 	 * @return the new WebApplicationContext
@@ -294,6 +298,7 @@ public class ContextLoader {
 			}
 			if (this.context instanceof ConfigurableWebApplicationContext) {
 				ConfigurableWebApplicationContext cwac = (ConfigurableWebApplicationContext) this.context;
+				// 判断应用上下文是否是激活状态,含义[传送门](org.springframework.context.ConfigurableApplicationContext.isActive)
 				if (!cwac.isActive()) {
 					// The context has not yet been refreshed -> provide services such as
 					// setting the parent context, setting the application context id, etc
@@ -303,12 +308,15 @@ public class ContextLoader {
 						ApplicationContext parent = loadParentContext(servletContext);
 						cwac.setParent(parent);
 					}
+					// 配置并且"刷新"容器（此时是RootWebApplicationContext）
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
+			// ====>>> 将RootWebApplicationContext当做属性值放置到ServletContext中
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
 
 			ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+			// 维护类加载器对应WebApplicationContext,这是为什么?
 			if (ccl == ContextLoader.class.getClassLoader()) {
 				currentContext = this.context;
 			} else if (ccl != null) {
@@ -390,6 +398,14 @@ public class ContextLoader {
 		}
 	}
 
+	/**
+	 * @description: `配置并刷新容器`
+	 * @param: wac 容器
+	 * @param: sc ServletContext
+	 * @Return 'void'
+	 * @By Wei.Wang
+	 * @date 2021/2/27 上午11:04
+	 */
 	protected void configureAndRefreshWebApplicationContext(ConfigurableWebApplicationContext wac, ServletContext sc) {
 		if (ObjectUtils.identityToString(wac).equals(wac.getId())) {
 			// The application context id is still set to its original default value
@@ -404,6 +420,7 @@ public class ContextLoader {
 			}
 		}
 
+		// 将ServletContext设置到ApplicationContext中
 		wac.setServletContext(sc);
 		String configLocationParam = sc.getInitParameter(CONFIG_LOCATION_PARAM);
 		if (configLocationParam != null) {
@@ -419,6 +436,7 @@ public class ContextLoader {
 		}
 
 		customizeContext(sc, wac);
+		//  进行容器的刷新
 		wac.refresh();
 	}
 

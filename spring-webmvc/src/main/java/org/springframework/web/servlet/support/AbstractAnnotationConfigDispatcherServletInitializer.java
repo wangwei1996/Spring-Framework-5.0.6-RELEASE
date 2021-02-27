@@ -73,14 +73,19 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	 * {@inheritDoc}
 	 * <p>This implementation creates an {@link AnnotationConfigWebApplicationContext},
 	 * providing it the annotated classes returned by {@link #getServletConfigClasses()}.
+	 * <p>
+	 * 创建ServletWebApplicationContext
 	 */
 	@Override
 	protected WebApplicationContext createServletApplicationContext() {
 		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+		// 获取ServletWebApplicationContext的配置类
 		Class<?>[] configClasses = getServletConfigClasses();
+		// 注册配置类
 		if (!ObjectUtils.isEmpty(configClasses)) {
 			context.register(configClasses);
 		}
+		// 返回WebApplicationContext，此时容器还未刷新
 		return context;
 	}
 
