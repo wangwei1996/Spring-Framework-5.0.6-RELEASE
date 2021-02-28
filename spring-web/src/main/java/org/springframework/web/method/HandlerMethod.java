@@ -74,6 +74,9 @@ public class HandlerMethod {
 	 */
 	private final Method method;
 
+	/**
+	 *
+	 */
 	private final Method bridgedMethod;
 
 	private final MethodParameter[] parameters;

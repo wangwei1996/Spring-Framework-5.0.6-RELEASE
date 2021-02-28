@@ -72,8 +72,9 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 	/**
 	 * Construct a new handler method with the given bean instance, method name and parameters.
-	 * @param bean the object bean
-	 * @param methodName the method name
+	 *
+	 * @param bean           the object bean
+	 * @param methodName     the method name
 	 * @param parameterTypes the method parameter types
 	 * @throws NoSuchMethodException when the method cannot be found
 	 */
@@ -87,6 +88,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	/**
 	 * Set the {@link WebDataBinderFactory} to be passed to argument resolvers allowing them to create
 	 * a {@link WebDataBinder} for data binding and type conversion purposes.
+	 *
 	 * @param dataBinderFactory the data binder factory.
 	 */
 	public void setDataBinderFactory(WebDataBinderFactory dataBinderFactory) {
@@ -117,18 +119,19 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	 * i.e. without argument resolution. Examples of provided argument values include a
 	 * {@link WebDataBinder}, a {@link SessionStatus}, or a thrown exception instance.
 	 * Provided argument values are checked before argument resolvers.
-	 * @param request the current request
+	 *
+	 * @param request      the current request
 	 * @param mavContainer the ModelAndViewContainer for this request
 	 * @param providedArgs "given" arguments matched by type, not resolved
 	 * @return the raw value returned by the invoked method
 	 * @throws Exception raised if no suitable argument resolver can be found,
-	 * or if the method raised an exception
+	 *                   or if the method raised an exception
 	 */
 	@Nullable
 	public Object invokeForRequest(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
-			Object... providedArgs) throws Exception {
-        
-		// 解析处理器方法的参数
+								   Object... providedArgs) throws Exception {
+
+		// 解析处理器方法的参数，即getMethodArgumentValues方法执行完成之后就获取到了所有参数的参数值
 		Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Invoking '" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
@@ -140,16 +143,18 @@ public class InvocableHandlerMethod extends HandlerMethod {
 			logger.trace("Method [" + ClassUtils.getQualifiedMethodName(getMethod(), getBeanType()) +
 					"] returned [" + returnValue + "]");
 		}
+		// 返回处理器方法的返回值
 		return returnValue;
 	}
 
 	/**
 	 * Get the method argument values for the current request.
+	 * providedArgs 一般为null
 	 */
 	private Object[] getMethodArgumentValues(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
-			Object... providedArgs) throws Exception {
+											 Object... providedArgs) throws Exception {
 
-        // 从HandlerMethod中获取处理器方法的参数
+		// 从HandlerMethod中获取处理器方法的参数
 		MethodParameter[] parameters = getMethodParameters();
 		Object[] args = new Object[parameters.length];
 		// 逐个对参数进行处理
@@ -164,7 +169,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 			// 判断当前的参数解析器是否支持该类型参数的解析
 			if (this.argumentResolvers.supportsParameter(parameter)) {
 				try {
-					// 调用方法进行参数的解析
+					// 调用方法进行参数的解析, 这里返回的是参数的值
 					args[i] = this.argumentResolvers.resolveArgument(
 							parameter, mavContainer, request, this.dataBinderFactory);
 					continue;
@@ -216,24 +221,21 @@ public class InvocableHandlerMethod extends HandlerMethod {
 		try {
 			// getBean就是处理器所在的类
 			return getBridgedMethod().invoke(getBean(), args);
-		}catch (IllegalArgumentException ex) {
+		} catch (IllegalArgumentException ex) {
 			// 可以看出，还不知晓全局异常处理器如何工作的
 			assertTargetBean(getBridgedMethod(), getBean(), args);
 			String text = (ex.getMessage() != null ? ex.getMessage() : "Illegal argument");
 			throw new IllegalStateException(getInvocationErrorMessage(text, args), ex);
-		}catch (InvocationTargetException ex) {
+		} catch (InvocationTargetException ex) {
 			// Unwrap for HandlerExceptionResolvers ...
 			Throwable targetException = ex.getTargetException();
 			if (targetException instanceof RuntimeException) {
 				throw (RuntimeException) targetException;
-			}
-			else if (targetException instanceof Error) {
+			} else if (targetException instanceof Error) {
 				throw (Error) targetException;
-			}
-			else if (targetException instanceof Exception) {
+			} else if (targetException instanceof Exception) {
 				throw (Exception) targetException;
-			}
-			else {
+			} else {
 				String text = getInvocationErrorMessage("Failed to invoke handler method", args);
 				throw new IllegalStateException(text, targetException);
 			}
@@ -266,8 +268,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 			sb.append("[").append(i).append("] ");
 			if (resolvedArgs[i] == null) {
 				sb.append("[null] \n");
-			}
-			else {
+			} else {
 				sb.append("[type=").append(resolvedArgs[i].getClass().getName()).append("] ");
 				sb.append("[value=").append(resolvedArgs[i]).append("]\n");
 			}
@@ -277,6 +278,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 	/**
 	 * Adds HandlerMethod details such as the bean type and method signature to the message.
+	 *
 	 * @param text error message to append the HandlerMethod details to
 	 */
 	protected String getDetailedErrorMessage(String text) {

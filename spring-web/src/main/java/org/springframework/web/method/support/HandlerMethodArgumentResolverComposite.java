@@ -44,10 +44,10 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 
 	private final List<HandlerMethodArgumentResolver> argumentResolvers = new LinkedList<>();
 
-    
+
 	/*
-	* 缓存，用于获取解析参数
-	*/
+	 * 缓存，用于获取解析参数
+	 */
 	private final Map<MethodParameter, HandlerMethodArgumentResolver> argumentResolverCache =
 			new ConcurrentHashMap<>(256);
 
@@ -62,6 +62,7 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 
 	/**
 	 * Add the given {@link HandlerMethodArgumentResolver}s.
+	 *
 	 * @since 4.3
 	 */
 	public HandlerMethodArgumentResolverComposite addResolvers(@Nullable HandlerMethodArgumentResolver... resolvers) {
@@ -96,6 +97,7 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 
 	/**
 	 * Clear the list of configured resolvers.
+	 *
 	 * @since 4.3
 	 */
 	public void clear() {
@@ -114,19 +116,28 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 
 	/**
 	 * Iterate over registered {@link HandlerMethodArgumentResolver}s and invoke the one that supports it.
+	 *
 	 * @throws IllegalStateException if no suitable {@link HandlerMethodArgumentResolver} is found.
+	 * @description: `解析处理器方法的参数(单个)`
+	 * @param: parameter 处理器方法中的一个参数
+	 * @param: mavContainer 处理结果的容器
+	 * @param: webRequest 请求
+	 * @param: binderFactory 参数绑定工厂
+	 * @Return 'java.lang.Object' 返回值是这个参数的值
+	 * @By Wei.Wang
+	 * @date 2021/2/28 上午10:33
 	 */
 	@Override
 	@Nullable
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
-			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
-         // 获取参数解析器
+								  NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
+		// 获取参数解析器
 		HandlerMethodArgumentResolver resolver = getArgumentResolver(parameter);
 		// 如果参数解析器为null，则抛出异常
 		if (resolver == null) {
 			throw new IllegalArgumentException("Unknown parameter type [" + parameter.getParameterType().getName() + "]");
 		}
-		// 返回解析后的参数
+		// 返回解析后的参数,在这个参数解析的时候，就会使用到消息转换器
 		return resolver.resolveArgument(parameter, mavContainer, webRequest, binderFactory);
 	}
 
@@ -146,9 +157,10 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 					logger.trace("Testing if argument resolver [" + methodArgumentResolver + "] supports [" +
 							parameter.getGenericParameterType() + "]");
 				}
-				// 若当前的参数解析器支持，则将其添加到缓存中，并返回.
+				// 若当前的参数解析器支持，则将其添加到缓存中，并返回. 某一个方法参数解析器支持，则立即返回
 				if (methodArgumentResolver.supportsParameter(parameter)) {
 					result = methodArgumentResolver;
+					// 获取到了对应
 					this.argumentResolverCache.put(parameter, result);
 					break;
 				}
