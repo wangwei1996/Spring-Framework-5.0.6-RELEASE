@@ -8,8 +8,8 @@ import java.lang.reflect.Method;
 public class StuMethodInterceptor implements MethodInterceptor {
 
 	/**
-	 * @param o           被代理的对象
-	 * @param method      当前执行的方法(被代理对象的)
+	 * @param o           代理对象(o.getClass: com.imooc.proxy.cglibproxy.AliPayment$$EnhancerByCGLIB$$b3dc8f3a)
+	 * @param method      当前执行的方法(被代理对象的方法,即method.clazz为com.imooc.proxy.cglibproxy.AliPayment)
 	 * @param args        方法执行所需的参数
 	 * @param methodProxy 动态代理方法实例
 	 * @return

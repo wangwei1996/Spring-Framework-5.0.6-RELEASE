@@ -4,6 +4,7 @@ import com.imooc.controller.HelloController;
 import com.imooc.controller.HiController;
 import com.imooc.controller.WelcomeController;
 import com.imooc.services.WelcomeService;
+import com.imooc.services.impl.WelcomeServiceImpl;
 import org.springframework.cglib.core.DebuggingClassWriter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -32,7 +33,7 @@ public class EntranceAnno {
 			System.out.println("--->" + goal);
 		}
 
-		WelcomeService welcomeService = (WelcomeService) applicationContext.getBean("welcomeServiceImpl");
+		WelcomeServiceImpl welcomeService = (WelcomeServiceImpl) applicationContext.getBean("welcomeServiceImpl");
 		WelcomeController welcomeController = applicationContext.getBean(WelcomeController.class);
 
 		welcomeService.sayHello("I am create by annotation");

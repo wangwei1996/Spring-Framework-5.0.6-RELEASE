@@ -6,6 +6,6 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class WelcomeController {
-	@Autowired
+	//@Autowired
 	private WelcomeService welcomeService;
 }
