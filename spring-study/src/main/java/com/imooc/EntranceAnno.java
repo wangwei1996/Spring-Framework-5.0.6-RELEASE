@@ -3,6 +3,7 @@ package com.imooc;
 import com.imooc.controller.HelloController;
 import com.imooc.controller.HiController;
 import com.imooc.controller.WelcomeController;
+import com.imooc.data.People;
 import com.imooc.services.WelcomeService;
 import com.imooc.services.impl.WelcomeServiceImpl;
 import org.springframework.cglib.core.DebuggingClassWriter;
@@ -11,6 +12,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.Map;
 
 @Configuration
 @EnableAspectJAutoProxy
@@ -45,5 +49,10 @@ public class EntranceAnno {
 		HelloController helloController = (HelloController) applicationContext.getBean("helloController");
 		helloController.handleRequest();
 
+		JdbcTemplate jdbcTemplate = (JdbcTemplate) applicationContext.getBean("jdbcTemplate");
+		Map<String, Object> queryForMap = jdbcTemplate.queryForMap("select * from people;");
+		for (Map.Entry<String, Object> entry : queryForMap.entrySet()) {
+			System.out.println(entry.getKey() + " : " + entry.getValue());
+		}
 	}
 }
