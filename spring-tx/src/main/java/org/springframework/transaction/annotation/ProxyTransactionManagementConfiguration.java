@@ -30,18 +30,28 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
  * necessary to enable proxy-based annotation-driven transaction management.
  *
  * @author Chris Beams
- * @since 3.1
  * @see EnableTransactionManagement
  * @see TransactionManagementConfigurationSelector
+ * @since 3.1
+ * <p>
+ * <p>
+ * <p>
+ * 注意：
+ * 1. 这里往Spring IOC容器中注入了两个Advisor，这两个Advisor的作用分别是什么?
  */
 @Configuration
 public class ProxyTransactionManagementConfiguration extends AbstractTransactionManagementConfiguration {
 
+	/**
+	 * 这是一个Advisor，在Spring中，所有的切面都会被转换为Advisor
+	 */
 	@Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor() {
 		BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
+		//
 		advisor.setTransactionAttributeSource(transactionAttributeSource());
+		//
 		advisor.setAdvice(transactionInterceptor());
 		if (this.enableTx != null) {
 			advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
@@ -49,12 +59,20 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 		return advisor;
 	}
 
+	/**
+	 * TransactionAttributeSource 是什么呢?  主要是用于判断该方法是被@Transactional注解标注了，是需要进行AOP代理的方法,即主要明白 “什么是TransactionAttribute”
+	 * 见： 029.Spring事务实现原理.md
+	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionAttributeSource transactionAttributeSource() {
 		return new AnnotationTransactionAttributeSource();
 	}
 
+	/**
+	 * org.springframework.transaction.interceptor.TransactionInterceptor 实现了 org.aopalliance.intercept.MethodInterceptor接口
+	 * 在Spring中，所有的MethodInterceptor也都会被转换为Advisor
+	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionInterceptor transactionInterceptor() {

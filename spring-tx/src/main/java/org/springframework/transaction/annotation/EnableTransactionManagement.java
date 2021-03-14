@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 
 /**
- * Enables Spring's annotation-driven transaction management capability, similar to
+ * Enables Spring's annotation-driven transaction management capability(n. 才能，能力；性能，容量), similar to
  * the support found in Spring's {@code <tx:*>} XML namespace. To be used on
  * {@link org.springframework.context.annotation.Configuration @Configuration}
  * classes as follows:
@@ -75,24 +75,30 @@ import org.springframework.core.Ordered;
  *
  * </beans>
  * }</pre>
- *
- * In both of the scenarios above, {@code @EnableTransactionManagement} and {@code
- * <tx:annotation-driven/>} are responsible for registering the necessary Spring
+ * <p>
+ * In both of the scenarios(n. 情节；脚本；情景介绍（scenario 的复数）) above, {@code @EnableTransactionManagement} and {@code
+ * <tx:annotation-driven/>} are responsible（adj. 负责的，可靠的；有责任的） for registering the necessary Spring
  * components that power annotation-driven transaction management, such as the
  * TransactionInterceptor and the proxy- or AspectJ-based advice that weave the
  * interceptor into the call stack when {@code JdbcFooRepository}'s {@code @Transactional}
  * methods are invoked.
+ * <p>
+ * 在上述两种情况下，@EnableTransactionManagement注解和<tx:annotation-driven/>配置都是负责将必要的spring关于事务管理的组件注册，例如 TransactionInterceptor
+ * 以及是基于代理的实现方式还是基于AspectJ的实现方式,即当JdbcFooRepository中的被@Transactional@Transactional注解修饰的方法被调用时如何将拦截器编织到调用栈中。
  *
- * <p>A minor difference between the two examples lies in the naming of the {@code
+ * <p>A minor(较小的) difference between the two examples lies in the naming of the {@code
  * PlatformTransactionManager} bean: In the {@code @Bean} case, the name is
  * <em>"txManager"</em> (per the name of the method); in the XML case, the name is
- * <em>"transactionManager"</em>. The {@code <tx:annotation-driven/>} is hard-wired to
+ * <em>"transactionManager"</em>. The {@code <tx:annotation-driven/>} is hard-wired( [计] 硬连线的，硬接线的；<非正式>天生的，固有的，本能的) to
  * look for a bean named "transactionManager" by default, however
- * {@code @EnableTransactionManagement} is more flexible; it will fall back to a by-type
+ * {@code @EnableTransactionManagement} is more flexible(adj. 灵活的；柔韧的；易弯曲的); it will fall back to a by-type
  * lookup for any {@code PlatformTransactionManager} bean in the container. Thus the name
  * can be "txManager", "transactionManager", or "tm": it simply does not matter.
+ * <p>
+ * 即： xml方式和注解方式会导致事务管理器的Bean的名字不一致，spring容器默认是查找名字为transactionManager的Bean。
+ * 但是@EnableTransactionManagement更灵活，他会使用类型去查找相关的Bean，那么这样Bean名字就无关紧要了
  *
- * <p>For those that wish to establish a more direct relationship between
+ * <p>For those that wish to establish（v. 建立，创立；确立；获得接受；查实，证实） a more direct relationship between
  * {@code @EnableTransactionManagement} and the exact transaction manager bean to be used,
  * the {@link TransactionManagementConfigurer} callback interface may be implemented -
  * notice the {@code implements} clause and the {@code @Override}-annotated method below:
@@ -123,10 +129,10 @@ import org.springframework.core.Ordered;
  *         return txManager();
  *     }
  * }</pre>
- *
- * This approach may be desirable simply because it is more explicit, or it may be
- * necessary in order to distinguish between two {@code PlatformTransactionManager} beans
- * present in the same container.  As the name suggests, the
+ * <p>
+ * This approach(方法) may be desirable simply because it is more explicit（adj. 明确的；清楚的；直率的；详述的）, or it may be
+ * necessary in order to distinguish（vt. 区分；辨别；使杰出，使表现突出 vi. 区别，区分；辨别） between two {@code PlatformTransactionManager} beans
+ * present in the same container.  As the name suggests(暗示，建议), the
  * {@code annotationDrivenTransactionManager()} will be the one used for processing
  * {@code @Transactional} methods. See {@link TransactionManagementConfigurer} Javadoc
  * for further details.
@@ -135,20 +141,24 @@ import org.springframework.core.Ordered;
  * {@link AdviceMode#PROXY} (the default), then the other attributes control the behavior
  * of the proxying. Please note that proxy mode allows for interception of calls through
  * the proxy only; local calls within the same class cannot get intercepted that way.
+ * <p>
+ * “local calls within the same class cannot get intercepted that way” 注意！！ 即方法内调用是无法拦截到的
  *
  * <p>Note that if the {@linkplain #mode} is set to {@link AdviceMode#ASPECTJ}, then the
  * value of the {@link #proxyTargetClass} attribute will be ignored. Note also that in
  * this case the {@code spring-aspects} module JAR must be present on the classpath, with
  * compile-time weaving or load-time weaving applying the aspect to the affected classes.
  * There is no proxy involved in such a scenario; local calls will be intercepted as well.
+ * <p>
+ * 若mode是ASPECTJ，则proxyTargetClass配置无效，且必须引入spring-aspects模块到项目中
  *
  * @author Chris Beams
  * @author Juergen Hoeller
- * @since 3.1
  * @see TransactionManagementConfigurer
  * @see TransactionManagementConfigurationSelector
  * @see ProxyTransactionManagementConfiguration
  * @see org.springframework.transaction.aspectj.AspectJTransactionManagementConfiguration
+ * @since 3.1
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

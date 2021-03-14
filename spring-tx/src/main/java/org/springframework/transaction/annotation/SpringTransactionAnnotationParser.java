@@ -31,6 +31,8 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
 
 /**
  * Strategy implementation for parsing Spring's {@link Transactional} annotation.
+ * <p>
+ * 解析Spring事务注释的策略实现。
  *
  * @author Juergen Hoeller
  * @since 2.5
@@ -45,8 +47,7 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 				ae, Transactional.class, false, false);
 		if (attributes != null) {
 			return parseTransactionAnnotation(attributes);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}

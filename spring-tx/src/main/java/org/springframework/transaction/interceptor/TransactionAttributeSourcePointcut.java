@@ -38,7 +38,9 @@ abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPoi
 		if (targetClass != null && TransactionalProxy.class.isAssignableFrom(targetClass)) {
 			return false;
 		}
+		// 1. 需要弄清楚 TransactionAttributeSource是什么---->>>> 主要是用于判断该方法是被@Transactional注解标注了，是需要进行AOP代理的方法
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+		// 2. 匹配，注意方法参数
 		return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
 	}
 

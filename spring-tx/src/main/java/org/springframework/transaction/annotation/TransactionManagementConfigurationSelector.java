@@ -39,6 +39,10 @@ public class TransactionManagementConfigurationSelector extends AdviceModeImport
 	 * @return {@link ProxyTransactionManagementConfiguration} or
 	 * {@code AspectJTransactionManagementConfiguration} for {@code PROXY} and
 	 * {@code ASPECTJ} values of {@link EnableTransactionManagement#mode()}, respectively
+	 *
+	 * AutoProxyRegistrar.class是为了开启Spring AOP功能，可以参考org.springframework.context.annotation.AspectJAutoProxyRegistrar，本质上是一样的。
+	 *
+	 * ProxyTransactionManagementConfiguration.class 则是向容器中注册事务相关的Bean
 	 */
 	@Override
 	protected String[] selectImports(AdviceMode adviceMode) {
