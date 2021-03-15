@@ -62,6 +62,7 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	/**
 	 * TransactionAttributeSource 是什么呢?  主要是用于判断该方法是被@Transactional注解标注了，是需要进行AOP代理的方法,即主要明白 “什么是TransactionAttribute”
 	 * 见： 029.Spring事务实现原理.md
+	 * 这个主要是一个工具，用于解析出方法上的@Transactional注解并且转换为TransactionAttribute
 	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)

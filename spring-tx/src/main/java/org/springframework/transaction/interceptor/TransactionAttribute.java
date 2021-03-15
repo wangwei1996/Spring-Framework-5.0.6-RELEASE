@@ -26,9 +26,9 @@ import org.springframework.transaction.TransactionDefinition;
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
- * @since 16.03.2003
  * @see DefaultTransactionAttribute
  * @see RuleBasedTransactionAttribute
+ * @since 16.03.2003
  */
 public interface TransactionAttribute extends TransactionDefinition {
 
@@ -36,12 +36,17 @@ public interface TransactionAttribute extends TransactionDefinition {
 	 * Return a qualifier value associated with this transaction attribute.
 	 * <p>This may be used for choosing a corresponding transaction manager
 	 * to process this specific transaction.
+	 * <p>
+	 * 返回与此事务属性关联的限定符值。这可以用于选择相应的事务管理器来处理这个特定的事务。
+	 * 从代码org.springframework.transaction.annotation.SpringTransactionAnnotationParser#parseTransactionAnnotation(org.springframework.core.annotation.AnnotationAttributes)可以
+	 * 看出，这代表的是事务管理器的名称
 	 */
 	@Nullable
 	String getQualifier();
 
 	/**
 	 * Should we roll back on the given exception?
+	 *
 	 * @param ex the exception to evaluate
 	 * @return whether to perform a rollback or not
 	 */

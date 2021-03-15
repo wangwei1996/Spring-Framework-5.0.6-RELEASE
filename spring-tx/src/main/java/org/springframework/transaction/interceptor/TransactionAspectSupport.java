@@ -274,6 +274,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	 * General delegate for around-advice-based subclasses, delegating to several other template
 	 * methods on this class. Able to handle {@link CallbackPreferringPlatformTransactionManager}
 	 * as well as regular {@link PlatformTransactionManager} implementations.
+	 * <p>
+	 * 基于around-advice的子类的通用委托，委托给该类上的其他几个模板方法。
+	 * 能够处理CallbackPreferringPlatformTransactionManager以及常规的PlatformTransactionManager实现。
 	 *
 	 * @param method      the Method being invoked
 	 * @param targetClass the target class that we're invoking the method on
@@ -286,8 +289,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 											 final InvocationCallback invocation) throws Throwable {
 
 		// If the transaction attribute is null, the method is non-transactional.
+		// 获取TransactionAttributeSource，如org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration.transactionInterceptor
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+		// 使用TransactionAttributeSource解析出方法目前方法上的@Transactional注解并转换为TransactionAttribute，
+		// 如果txAttr(即解析出的TransactionAttribute为空，换句话说就是没有被@Transactional注解标注)为空，则不需要事务
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
+		// 通过TransactionAttribute来获取事务管理器,即获取事务策略
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
@@ -367,6 +374,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 	/**
 	 * Determine the specific transaction manager to use for the given transaction.
+	 * 确定给定事务使用的特定事务管理器。
+	 * <p>
+	 * 这里选择的策略是什么?
 	 */
 	@Nullable
 	protected PlatformTransactionManager determineTransactionManager(@Nullable TransactionAttribute txAttr) {
@@ -375,6 +385,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			return getTransactionManager();
 		}
 
+		// 通过TransactionAttribute中的代码注释可以看出，qualifier是事务管理器的名字
 		String qualifier = txAttr.getQualifier();
 		if (StringUtils.hasText(qualifier)) {
 			return determineQualifiedTransactionManager(this.beanFactory, qualifier);

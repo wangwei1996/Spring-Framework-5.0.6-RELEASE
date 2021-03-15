@@ -64,6 +64,7 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 		rbta.setIsolationLevel(isolation.value());
 		rbta.setTimeout(attributes.getNumber("timeout").intValue());
 		rbta.setReadOnly(attributes.getBoolean("readOnly"));
+		// 从注解org.springframework.transaction.annotation.Transactional可以判断出来，qualifier是代表的是事务管理器
 		rbta.setQualifier(attributes.getString("value"));
 		ArrayList<RollbackRuleAttribute> rollBackRules = new ArrayList<>();
 		Class<?>[] rbf = attributes.getClassArray("rollbackFor");

@@ -5,6 +5,7 @@ import com.imooc.controller.HiController;
 import com.imooc.controller.WelcomeController;
 import com.imooc.data.People;
 import com.imooc.services.WelcomeService;
+import com.imooc.services.impl.TransactionalServiceImpl;
 import com.imooc.services.impl.WelcomeServiceImpl;
 import org.springframework.cglib.core.DebuggingClassWriter;
 import org.springframework.context.ApplicationContext;
@@ -51,10 +52,8 @@ public class EntranceAnno {
 		HelloController helloController = (HelloController) applicationContext.getBean("helloController");
 		helloController.handleRequest();
 
-		JdbcTemplate jdbcTemplate = (JdbcTemplate) applicationContext.getBean("jdbcTemplate");
-		Map<String, Object> queryForMap = jdbcTemplate.queryForMap("select * from people;");
-		for (Map.Entry<String, Object> entry : queryForMap.entrySet()) {
-			System.out.println(entry.getKey() + " : " + entry.getValue());
-		}
+		TransactionalServiceImpl transactionalService = (TransactionalServiceImpl) applicationContext.getBean("transactionalServiceImpl");
+		transactionalService.testTrans();
+
 	}
 }
