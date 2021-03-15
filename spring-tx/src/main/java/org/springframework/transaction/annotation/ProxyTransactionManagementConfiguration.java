@@ -71,7 +71,7 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 
 	/**
 	 * org.springframework.transaction.interceptor.TransactionInterceptor 实现了 org.aopalliance.intercept.MethodInterceptor接口
-	 * 在Spring中，所有的MethodInterceptor也都会被转换为Advisor
+	 * 在Spring中，所有的MethodInterceptor也都会被转换为Advisor===》org.springframework.aop.framework.adapter.DefaultAdvisorAdapterRegistry#wrap(java.lang.Object)
 	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
