@@ -294,8 +294,10 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		// 使用TransactionAttributeSource解析出方法目前方法上的@Transactional注解并转换为TransactionAttribute，
 		// 如果txAttr(即解析出的TransactionAttribute为空，换句话说就是没有被@Transactional注解标注)为空，则不需要事务
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
-		// 通过TransactionAttribute来获取事务管理器,即获取事务策略
+		// 通过TransactionAttribute来获取事务管理器,即获取事务策略(先通过名称获取，没有指定名称则获取默认的)
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
+
+		// 添加上事务的方法的全限定名，如： com.imooc.services.impl.TransactionalServiceImpl.testTrans
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
@@ -385,11 +387,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			return getTransactionManager();
 		}
 
-		// 通过TransactionAttribute中的代码注释可以看出，qualifier是事务管理器的名字
+		// 通过TransactionAttribute中的代码注释可以看出，qualifier是事务管理器的名字,即这里就是获取对应的事务管理器
 		String qualifier = txAttr.getQualifier();
+		// 当用户指定了事务管理器
 		if (StringUtils.hasText(qualifier)) {
 			return determineQualifiedTransactionManager(this.beanFactory, qualifier);
-		} else if (StringUtils.hasText(this.transactionManagerBeanName)) {
+		} else if (StringUtils.hasText(this.transactionManagerBeanName)) { // 当用户没有指定事务管理器并且存在默认的事务管理器
 			return determineQualifiedTransactionManager(this.beanFactory, this.transactionManagerBeanName);
 		} else {
 			PlatformTransactionManager defaultTransactionManager = getTransactionManager();
@@ -405,16 +408,34 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		}
 	}
 
+	/**
+	 * qualified adj. 合格的；有资格的 v. 限制（qualify的过去分词）；描述；授权予
+	 * <p>
+	 * 获取指定的事务管理器
+	 *
+	 * @param beanFactory
+	 * @param qualifier
+	 * @return
+	 */
 	private PlatformTransactionManager determineQualifiedTransactionManager(BeanFactory beanFactory, String qualifier) {
+		// 优先从缓存中获取
 		PlatformTransactionManager txManager = this.transactionManagerCache.get(qualifier);
+		// 当缓存中没有的时候，从容器中获取
 		if (txManager == null) {
 			txManager = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
 					beanFactory, PlatformTransactionManager.class, qualifier);
+			// 将获取到的事务管理器添加到缓存中
 			this.transactionManagerCache.putIfAbsent(qualifier, txManager);
 		}
 		return txManager;
 	}
 
+	/**
+	 * @param method
+	 * @param targetClass
+	 * @param txAttr
+	 * @return
+	 */
 	private String methodIdentification(Method method, @Nullable Class<?> targetClass,
 										@Nullable TransactionAttribute txAttr) {
 

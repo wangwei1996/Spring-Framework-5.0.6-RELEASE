@@ -171,6 +171,8 @@ public abstract class BeanFactoryUtils {
 	 * <p>This version of {@code beanNamesForTypeIncludingAncestors} automatically
 	 * includes prototypes and FactoryBeans.
 	 *
+	 * 获取所有的类型为给定类型的Bean的名称
+	 *
 	 * @param lbf  the bean factory
 	 * @param type the type that beans must match (as a {@code Class})
 	 * @return the array of matching bean names, or an empty array if none
