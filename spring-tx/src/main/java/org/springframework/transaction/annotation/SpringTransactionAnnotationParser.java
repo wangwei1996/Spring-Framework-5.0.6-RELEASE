@@ -56,6 +56,15 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 		return parseTransactionAnnotation(AnnotationUtils.getAnnotationAttributes(ann, false, false));
 	}
 
+    /**
+	* 从代码： org.springframework.transaction.interceptor.TransactionAspectSupport#invokeWithinTransaction (该方法里的代码: final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);)可以定位到这里
+     * 从代码中可以看出，解析出来的TransactionAttribute的类型是org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
+     *
+     * 从代码：org.springframework.transaction.interceptor.RuleBasedTransactionAttribute#rollbackOn并结合这个解析的代码，就可以知道当事务遇到指定异常需要回滚的功能是如何实现的了。   
+	 *  即：
+     *    1. 在这里，即将@Tranactional注解转换为TransactionAttribute的时候，将需要回滚的和不需要回滚的配置均转换为RollbackRuleAttribute
+	 *    2. 在org.springframework.transaction.interceptor.RuleBasedTransactionAttribute#rollbackOn中迭代这个list，如果类型是NoRollbackRuleAttribute则表示不需要回滚；若类型是RollbackRuleAttribute则需要回滚
+     */
 	protected TransactionAttribute parseTransactionAnnotation(AnnotationAttributes attributes) {
 		RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
 		Propagation propagation = attributes.getEnum("propagation");
