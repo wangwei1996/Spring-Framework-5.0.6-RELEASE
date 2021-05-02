@@ -12,6 +12,6 @@ public class HelloServiceImpl implements HelloService {
 
 	@Override
 	public void sayHelloServiceThrowException() {
-		throw new IllegalArgumentException("I am HelloService , sayHelloServiceThrowException");
+		// throw new IllegalArgumentException("I am HelloService , sayHelloServiceThrowException");
 	}
 }

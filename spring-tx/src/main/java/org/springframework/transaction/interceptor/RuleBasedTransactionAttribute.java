@@ -127,6 +127,7 @@ public class RuleBasedTransactionAttribute extends DefaultTransactionAttribute i
 	 * inheritance hierarchy to the exception). If no rule applies (-1),
 	 * return false.
 	 * @see TransactionAttribute#rollbackOn(java.lang.Throwable)
+	 *
 	 */
 	@Override
 	public boolean rollbackOn(Throwable ex) {

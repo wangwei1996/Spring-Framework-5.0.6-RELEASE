@@ -28,10 +28,10 @@ public class EntranceAnno {
 	 */
 	public static void main(String[] args) {
 		// 获取程序运行的过程中产生的代理类(分别代表CGLIB代理和JDK动态代理)
-		System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,
+		/**System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,
 				"/home/wei/workspace/SOURCE_CODE/Spring-Framework-v5.0.6.release/spring-proxy");
 		System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles",
-				"true");
+				"true");**/
 
 		ApplicationContext applicationContext = new AnnotationConfigApplicationContext(EntranceAnno.class);
 
@@ -54,6 +54,11 @@ public class EntranceAnno {
 
 		TransactionalServiceImpl transactionalService = (TransactionalServiceImpl) applicationContext.getBean("transactionalServiceImpl");
 		transactionalService.testTrans();
+		try {
+			transactionalService.testTransRollBack();
+		} catch (Exception e) {
+			System.out.println("==================================>" + e.getMessage());
+		}
 
 	}
 }

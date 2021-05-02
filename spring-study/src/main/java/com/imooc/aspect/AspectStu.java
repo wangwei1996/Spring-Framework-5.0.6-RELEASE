@@ -6,9 +6,7 @@ import org.aspectj.lang.annotation.*;
 import org.springframework.stereotype.Component;
 
 /**
- *
  * 各个Advice的执行流程参见: Spring-Note/015.AOP引入.md
- *
  */
 @Aspect
 @Component
@@ -48,15 +46,16 @@ public class AspectStu {
 		System.out.println("I am execution(* com.imooc.services..*.*(..)) --->afterThrowing");
 	}
 
-	@Around(value = "embed()",argNames = "joinPoint")
-	public Object aroundAdvice(JoinPoint joinPoint) throws Throwable {
+	@Around(value = "embed()", argNames = "joinPoint")
+	public Object aroundAdvice(JoinPoint joinPoint) {
 		System.out.println("execution(* com.imooc.services..*.*(..)) --->aroundAdvice--->proceed方法执行之前");
 		Object returnVal = null;
 		try {
 			returnVal = ((ProceedingJoinPoint) joinPoint).proceed();
 		} catch (Throwable throwable) {
 			System.out.println("======> ((ProceedingJoinPoint) joinPoint).proceed()  出现异常");
-			//throw throwable;
+			// 是否抛出异常请参考一下《spring-note/035.Spring事务和切面的关系.md》
+			throw new RuntimeException(throwable.getMessage());
 		}
 		System.out.println("execution(* com.imooc.services..*.*(..)) --->aroundAdvice--->proceed方法执行之后");
 		return returnVal;
