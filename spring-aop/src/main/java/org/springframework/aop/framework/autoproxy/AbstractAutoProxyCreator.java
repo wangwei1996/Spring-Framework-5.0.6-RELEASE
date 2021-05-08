@@ -181,6 +181,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	}
 
 	/**
+	 * 这里是设置TargetSourceCreator，用于创建TargetSource,从而来创建代理对象，调用是在：
+	 * resources/org/springframework/aop/framework/autoproxy/AdvisorAutoProxyCreatorTests-custom-targetsource.xml
+	 * resources/org/springframework/aop/framework/autoproxy/AdvisorAutoProxyCreatorTests-quick-targetsource.xml
+	 *
 	 * Set custom {@code TargetSourceCreators} to be applied in this order.
 	 * If the list is empty, or they all return null, a {@link SingletonTargetSource}
 	 * will be created for each bean.
