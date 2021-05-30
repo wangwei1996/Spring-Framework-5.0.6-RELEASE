@@ -12,8 +12,7 @@ public class Entrance {
 	 * 通过XMl文件来初始化IOC
 	 */
 	public static void main(String[] args) {
-		String xmlPath = "G:\\Study_WorkSpace\\Spring\\Spring-Framework-v5.0.6.release\\" +
-				"spring-study\\src\\main\\resources\\spring\\Spring-config.xml";
+		String xmlPath = "./spring-study/src/main/resources/spring/Spring-config.xml";
 
 		ApplicationContext applicationContext = new FileSystemXmlApplicationContext(xmlPath);
 		WelcomeService welcomeService = (WelcomeService) applicationContext.getBean("welcomeService");

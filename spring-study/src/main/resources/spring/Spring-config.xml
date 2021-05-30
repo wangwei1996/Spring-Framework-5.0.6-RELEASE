@@ -5,6 +5,8 @@
        http://www.springframework.org/schema/beans/spring-beans.xsd">
 	<!---->
 	<bean id="welcomeService" class="com.imooc.services.impl.WelcomeServiceImpl"/>
+	<bean id="hiService" class="com.imooc.services.impl.HiServiceImpl"/>
+	<bean id="helloService" class="com.imooc.services.impl.HelloServiceImpl"/>
 	<bean id="welcomeController" class="com.imooc.controller.WelcomeController" autowire="byName">
 
 	</bean>

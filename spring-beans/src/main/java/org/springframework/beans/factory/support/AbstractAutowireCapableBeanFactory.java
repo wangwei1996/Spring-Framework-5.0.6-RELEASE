@@ -669,7 +669,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// 是否允许提前暴露
 		if (earlySingletonExposure) {
-			// 并发获取的情况下也需要保证单例
+			// 并发获取的情况下也需要保证单例 (注意第二个参数)
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
 				if (exposedObject == bean) { // 如果即将被暴露的Bean和原始Bean是一样的(即没有被包装，没有被代理)

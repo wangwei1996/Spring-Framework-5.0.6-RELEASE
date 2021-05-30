@@ -211,6 +211,16 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Override
 	@Nullable
 	public Object getSingleton(String beanName) {
+		/**
+		 * 方法org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String, boolean)
+		 * 的第二个参数就会将Bean从三级缓存变为二级缓存。即A依赖B，B依赖于A
+		 *
+		 * 1. 初始化线程会在初始化A的时候构建A的三级缓存
+		 * 2. 在populate中发现A依赖B，此时初始化线程会初始化B，此时会构建B的三级缓存
+		 * 3. 在初始化B时，也会调用populate方法注入属性，此时会调用getSingleton(beannameA,true)将A由三级缓存变为二级缓存，获取Bean A的实例
+		 * 4. B初始化完成，直接从三级缓存变为一级缓存
+		 * 5. 回到A初始化流程，A从二级缓存变为一级缓存
+		 */
 		return getSingleton(beanName, true);
 	}
 
@@ -243,7 +253,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (singletonFactory != null) {
 						// Step6: 使用ObjectFactory创建单例Bean的实例,具体做了什么操作
 						singletonObject = singletonFactory.getObject();
-						// Step7： 更新缓存(缓存级别提升?)
+						// Step7： 更新缓存(缓存级别提升?)========> 设置二级缓存
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						this.singletonFactories.remove(beanName);
 					}
@@ -308,7 +318,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
-					// 创建单例的后置操作,操作之一则是名称为beanName的Bean不再创建中了
+					// 创建单例的后置操作,《操作之一则是名称为beanName的Bean不再创建中了》
 					afterSingletonCreation(beanName);
 				}
 				/**

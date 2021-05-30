@@ -288,7 +288,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		/**
 		 * Eagerly check singleton cache for manually(adv. 手动地；用手) registered singletons.
-		 * 这里会尝试从缓存中获取
+		 * 这里会尝试从三级缓存中获取()
 		 */
 		Object sharedInstance = getSingleton(beanName);
 		/**
@@ -315,7 +315,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
 			/**
-			 *
+			 * ========================================================================为什么scope为prototype的Bean不支持循环依赖,即getSingleton返回的永远为null
 			 * 如果scope是prototype，并且显示在创建中，则基本是循环依赖。
 			 * 针对于prototype的循环依赖，Spring无解
 			 *
