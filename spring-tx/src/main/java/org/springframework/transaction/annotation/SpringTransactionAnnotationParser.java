@@ -57,7 +57,8 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 	}
 
     /**
-	* 从代码： org.springframework.transaction.interceptor.TransactionAspectSupport#invokeWithinTransaction (该方法里的代码: final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);)可以定位到这里
+	* 从代码： org.springframework.transaction.interceptor.TransactionAspectSupport#invokeWithinTransaction
+	 * (该方法里的代码: final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);)可以定位到这里
      * 从代码中可以看出，解析出来的TransactionAttribute的类型是org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
      *
      * 从代码：org.springframework.transaction.interceptor.RuleBasedTransactionAttribute#rollbackOn并结合这个解析的代码，就可以知道当事务遇到指定异常需要回滚的功能是如何实现的了。   

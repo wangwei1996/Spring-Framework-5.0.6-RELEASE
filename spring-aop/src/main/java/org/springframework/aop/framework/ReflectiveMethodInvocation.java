@@ -174,8 +174,10 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 			return invokeJoinpoint();
 		}
 
+		// 在这里，根据索引(currentInterceptorIndex)来获取需要执行的通知。这里的索引(currentInterceptorIndex)很重要,决定了切面的执行顺序。(了解一下前置通知，后置通知，环绕通知的)
 		Object interceptorOrInterceptionAdvice =
 				this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
+
 		if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
 			// Evaluate(评价，评估) dynamic method matcher here: static part will already have
 			// been evaluated and found to match.

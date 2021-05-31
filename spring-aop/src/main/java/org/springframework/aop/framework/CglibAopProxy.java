@@ -216,6 +216,11 @@ class CglibAopProxy implements AopProxy, Serializable {
 			enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 			enhancer.setStrategy(new ClassLoaderAwareUndeclaredThrowableStrategy(classLoader));
 
+			/**
+			 *  关键点，获取CallBack的过程需要了解一下
+			 * 	从com.imooc.proxy.cglibproxy.CglibProxyMain可以看出，Cglib AOP的代理方式就是MethodInterceptor
+			 * 	MethodInterceptor实现了org.springframework.cglib.proxy.Callback接口）
+			 */
 			Callback[] callbacks = getCallbacks(rootClass);
 			Class<?>[] types = new Class<?>[callbacks.length];
 			for (int x = 0; x < types.length; x++) {
@@ -306,7 +311,11 @@ class CglibAopProxy implements AopProxy, Serializable {
 		boolean isFrozen = this.advised.isFrozen();
 		boolean isStatic = this.advised.getTargetSource().isStatic();
 
-		// Choose an "aop" interceptor (used for AOP calls).
+		/**
+		 * Choose an "aop" interceptor (used for AOP calls).
+		 *
+		 *  CglibAopProxy的一个内部类
+		 */
 		Callback aopInterceptor = new DynamicAdvisedInterceptor(this.advised);
 
 		// Choose a "straight to target" interceptor. (used for calls that are
@@ -662,12 +671,10 @@ class CglibAopProxy implements AopProxy, Serializable {
 	/**
 	 * General purpose AOP callback. Used when the target is dynamic or when the
 	 * proxy is not frozen.
-	 *
+	 * <p>
 	 * 重要======>>>>>>
-	 *   为什么可以实现AOP方式，这里就是答案：
-	 *    这个DynamicAdvisedInterceptor就是将所有的切面通知和方法拦截器都收集起来，然后统一执行
-	 *
-	 *
+	 * 为什么可以实现AOP方式，这里就是答案：
+	 * 这个DynamicAdvisedInterceptor就是将所有的切面通知和方法拦截器都收集起来，然后统一执行
 	 */
 	private static class DynamicAdvisedInterceptor implements MethodInterceptor, Serializable {
 
@@ -693,7 +700,16 @@ class CglibAopProxy implements AopProxy, Serializable {
 				// Get as late as possible to minimize the time we "own" the target, in case it comes from a pool...
 				target = targetSource.getTarget();
 				Class<?> targetClass = (target != null ? target.getClass() : null);
+
+				/***
+				 * 这个this.advised初始化就在代理类创建之前:
+				 * org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#createProxy(java.lang.Class,
+				 * java.lang.String, java.lang.Object[], org.springframework.aop.TargetSource)方法中： proxyFactory.addAdvisors(advisors);
+				 *
+				 * this.advised其实就是proxyFactory
+				 */
 				List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+
 				Object retVal;
 				// Check whether we only have one InvokerInterceptor: that is,
 				// no real advice, but just reflective invocation of the target.

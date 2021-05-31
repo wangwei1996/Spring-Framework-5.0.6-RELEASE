@@ -50,6 +50,7 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	@Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor() {
+		// 关键是这个对象，这是一个Advisor,与其他的Advisor一致，这里是绑定了一个PointCut，通过PointCut去与方法匹配，判断该方法是否需要事务的支持。
 		BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
 		//
 		advisor.setTransactionAttributeSource(transactionAttributeSource());

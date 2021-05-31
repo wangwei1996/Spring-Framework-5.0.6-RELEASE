@@ -184,7 +184,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * 这里是设置TargetSourceCreator，用于创建TargetSource,从而来创建代理对象，调用是在：
 	 * resources/org/springframework/aop/framework/autoproxy/AdvisorAutoProxyCreatorTests-custom-targetsource.xml
 	 * resources/org/springframework/aop/framework/autoproxy/AdvisorAutoProxyCreatorTests-quick-targetsource.xml
-	 *
+	 * <p>
 	 * Set custom {@code TargetSourceCreators} to be applied in this order.
 	 * If the list is empty, or they all return null, a {@link SingletonTargetSource}
 	 * will be created for each bean.
@@ -298,7 +298,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 * Suppresses(取缔，压制) unnecessary(不必要) default instantiation of the target bean:
 		 * The TargetSource will handle target instances in a custom fashion.(TargetSource将以自定义方式处理目标实例。)
 		 *
-		 * getCustomTargetSource 即获取用户自定了的TargetSource,见"020.AOP学习之TargetSource.md"
+		 * getCustomTargetSource 即获取《“用户自定了的TargetSource”,请注意，一定是用户自定义的》,见"020.AOP学习之TargetSource.md",
+		 * 只有用户自定义了TargetSource的时候才有效，其实创建代理是在：org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#initializeBean(java.lang.String, java.lang.Object, org.springframework.beans.factory.support.RootBeanDefinition)
 		 */
 		TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
 		// 如果获取到了用户自定义的TargetSource,则构建缓存,并且直接构建代理对象并返回.但是当用户没有自定义的时候，
@@ -406,7 +407,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 * 获取目前Bean匹配上的Advisor,若匹配上了，则返回对应的advisor数组，反之，返回DO_NOT_PROXY;
 		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
-		// 当有advisor与Bean匹配上了
+		// 当有advisor与Bean匹配上了，即当有匹配的Advisor时才回去创建代理对象
 		if (specificInterceptors != DO_NOT_PROXY) {
 			// 添加缓存,并设置为被代理了
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
@@ -541,7 +542,15 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 		// 获取BeanFactory中所有的Advisor
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+
+		/**
+		 * 注意，这里汇集了该所有与该Bean所匹配的Advisor,后续代理类执行的时候会从这里获取。
+		 * ProxyFactory间接继承了org.springframework.aop.framework.AdvisedSupport
+		 *
+		 *
+		 */
 		proxyFactory.addAdvisors(advisors);
+
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
 		// 设置frozen标志位，即设置代理类创建完成之后是否能修改
