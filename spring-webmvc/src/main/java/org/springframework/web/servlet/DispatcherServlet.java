@@ -1087,7 +1087,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 				/**
 				 *Determine handler adapter for the current request.
-				 * 获取处理器适配器
+				 * 获取处理器适配器，如一般使用的org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter支持HandlerMethod
 				 */
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 				/*
@@ -1372,7 +1372,11 @@ public class DispatcherServlet extends FrameworkServlet {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Testing handler adapter [" + ha + "]");
 				}
-				// 判断当前的处理器适配器是否满足,若满足，则返回；反之，则继续查找(不同的适配器支持的也不一样:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter支持HandlerMethod)
+				/**
+				 * 判断当前的处理器适配器是否满足,若满足，则返回；
+				 * 反之，则继续查找(不同的适配器支持的也不一样:org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
+				 * 支持HandlerMethod)
+				 */
 				if (ha.supports(handler)) {
 					return ha;
 				}
