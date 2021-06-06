@@ -417,6 +417,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			 *  小朋友，是不是有点疑惑，为什么在属性注入完成之后再创建代理对象，之前注入的属性还能访问？
 			 *  ------>>>>> 这里的bean能解释一切,以及AOP代理的并不是被代理类对象，而是TargetSource
 			 *
+			 *
+			 * 其实AOP需要注意：
+			 *   1. 各个方法(切面方法,被代理方法)之间的调用顺序
+			 *   2. 调用顺序保证之后，就是被代理方法的方法接收者保存的问题了
 			 */
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
@@ -557,6 +561,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 */
 		proxyFactory.addAdvisors(advisors);
 
+		/**
+		 * 这个targetSource也是需要注意一下的
+		 */
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
 		// 设置frozen标志位，即设置代理类创建完成之后是否能修改
