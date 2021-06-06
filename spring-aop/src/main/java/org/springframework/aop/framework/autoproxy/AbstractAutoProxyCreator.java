@@ -411,7 +411,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (specificInterceptors != DO_NOT_PROXY) {
 			// 添加缓存,并设置为被代理了
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
-			// 创建代理对象！！！
+			/***
+			 * 创建代理对象！！！
+			 *
+			 *  小朋友，是不是有点疑惑，为什么在属性注入完成之后再创建代理对象，之前注入的属性还能访问？
+			 *  ------>>>>> 这里的bean能解释一切,以及AOP代理的并不是被代理类对象，而是TargetSource
+			 *
+			 */
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());

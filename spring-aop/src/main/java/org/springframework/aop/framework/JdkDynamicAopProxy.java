@@ -164,10 +164,17 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 	}
 
 
-	/**
+	/***
 	 * Implementation of {@code InvocationHandler.invoke}.
 	 * <p>Callers will see exactly the exception thrown by the target,
 	 * unless a hook method throws an exception.
+	 *
+	 * 通过代理类<spring-note/027.JDK动态代理类代码分析.md>可以得出如下结论：
+	 * @param proxy: 代理类对象
+	 * @param method: 被代理方法
+	 * @param args: 方法参数
+	 * @return
+	 * @throws Throwable
 	 */
 	@Override
 	@Nullable
