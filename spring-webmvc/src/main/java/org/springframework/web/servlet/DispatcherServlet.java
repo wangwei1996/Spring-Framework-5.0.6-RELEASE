@@ -1059,7 +1059,10 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		HttpServletRequest processedRequest = request;
+
+		// 执行器链
 		HandlerExecutionChain mappedHandler = null;
+
 		boolean multipartRequestParsed = false;
 
 		// 从request中获取到异步管理器
@@ -1075,19 +1078,24 @@ public class DispatcherServlet extends FrameworkServlet {
 				// 是否经过转换,因为如果是文件上传的话，则会通过文件上传解析器来对request进行处理，返回一个新的request(类型取决于文件上传解析器)
 				multipartRequestParsed = (processedRequest != request);
 
-				/*
+				/** 重要:
+				 *   1. 如何获取的 ?
+				 *   2. 当一个路径有多个处理器,这时候是如何处理的 ?
 				 * Determine handler for the current request.
 				 * 从处理器映射器(HandlerMapping)中获取执行链,执行链包括处理器方法和对应的拦截器
 				 */
 				mappedHandler = getHandler(processedRequest);
+
 				// 如果查询不到执行链，根据配置是抛出异常或返回请求者404
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);
 					return;
 				}
 				/**
-				 *Determine handler adapter for the current request.
-				 * 获取处理器适配器，如一般使用的org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter支持HandlerMethod
+				 * >>>>>> 获取处理器适配器, 处理器方法就是由HandlerAdapter来执行的 <<<<<<<
+				 *
+				 * Determine handler adapter for the current request.
+				 * 如一般使用的org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter支持HandlerMethod
 				 */
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 				/*
@@ -1114,8 +1122,10 @@ public class DispatcherServlet extends FrameworkServlet {
 					return;
 				}
 
-				/*
+				/**
 				 *  org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter#handle
+				 *
+				 *  可以看到，HandlerAdapter仅是对处理器方法进行处理，拦截器并不是由他执行的的
 				 */
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
@@ -1124,6 +1134,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				applyDefaultViewName(processedRequest, mv);
+
 				/*
 				 *
 				 *  执行处理器链上的拦截器的org.springframework.web.servlet.HandlerExecutionChain#applyPostHandle方法，请注意是倒序处理
