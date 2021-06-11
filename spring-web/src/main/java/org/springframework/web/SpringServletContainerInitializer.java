@@ -127,9 +127,11 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	 * of Spring's {@code WebApplicationInitializer} interface and provide the set of all
 	 * such types to the {@code webAppInitializerClasses} parameter of this method.
 	 * <p>
+	 *     =========>>>>>>>>>
 	 * 因为这个类声明了@HandlesTypes(WebApplicationInitializer.class)，所以Servlet3.0+的容器将自动扫描类路径上的Spring中的WebApplicationInitializer实现
 	 * 并且提供所有的WebApplicationInitializer实现的set集合作为这个方法的参数
 	 *
+	 *   <<<<<<<<<-===========
 	 * <p>If no {@code WebApplicationInitializer} implementations are found on the classpath,
 	 * this method is effectively a no-op. An INFO-level log message will be issued（v. 发布；（正式）发给；将……诉诸法律；出版；发行（新的一批）；流出；由……产生（issue 的过去式及过去分词））
 	 * notifying the user that the {@code ServletContainerInitializer} has indeed been invoked but that
